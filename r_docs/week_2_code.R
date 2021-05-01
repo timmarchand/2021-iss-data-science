@@ -14,7 +14,7 @@
 
 # Incomplete command; abort with ESC:
 
-3 - 1
+3 -
 
 # Division:
 
@@ -46,7 +46,7 @@ sqrt(4)
 
 # Not supplying an argument gives error:
 
-sqrt(9)
+sqrt()
 
 # Absolute value makes negative numbers positive:
 
@@ -197,7 +197,7 @@ mynums[-2] # the minus sign means return everything EXCEPT the elelment in the 2
 1:100
 
 # practice with real data 1 - feel free to add comments! ####
-# this is a comment
+
 world.pop <- c(2525779, 3026003, 3691173, 4449049, 5320817, 6127700, 6916183)
 world.pop
 

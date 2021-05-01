@@ -5,10 +5,11 @@
 rm(list=ls())
 ## Load the packages
 ## you may need to use install.packages() first
-library(nycflights13)
-library(ggplot2)
-library(dplyr)
+library(nycflights13) # for the data
+library(dplyr) # for manipulating the data
+library(ggplot2) # for plotting
 
+## Scatterplots ----
 # Scatterplots allow you to visualise the relationship between two numerical variables
 ## Using the flights dataframe included in the  nycflights13 package, 
 # let's visualise the relationship between departure delay on the x axis and arrival delay on the y axis 
@@ -21,10 +22,7 @@ alaska_flights <- flights %>%
 
 ## Question: Compare the new df (alaska_flights) with the original (flights) using View() or glimpse(). ----
 # How are they different? 
-glimpse(flights)
-glimpse(alaska_flights)
 
-View(flights)
 
 ## Scatterplots using geom_point
 ## Most ggplots are built up with lines of code, each responding to a layer of the graph. 
@@ -37,13 +35,12 @@ ggplot(data = alaska_flights, mapping = aes(x = dep_delay, y = arr_delay))
 
 
 ## We add a layer to the ggplot() call using the + sign at the end of a line
-## For scatter plots, the geometric object you want to use is geom_point()
-x11()
+## For scatter plots, the geometric object you want o use is geom_point()
 ggplot(data = alaska_flights, mapping = aes(x = dep_delay, y = arr_delay)) +
   geom_point()
 
 ## Questions: What kind of relationship exists between dep_delay and arr_delay? Are you surprised? Why? Why not? ----
-## Why do you believe there is a cluster of points near (0, 0)? What does (0, 0) correspond to in terms of the Alaska Air flights?
+## Why do you think there is a cluster of points near (0, 0)? What does (0, 0) correspond to in terms of the Alaska Air flights?
 
 ## Overplotting ----
 ## Because there are a lot of points near 0,0 on the graph, it is hard to tell the true number of points - this is called overplotting.
@@ -71,9 +68,9 @@ ggplot(data = alaska_flights, mapping = aes(x = dep_delay, y = arr_delay)) +
 ## people have less need to travel and so local languages develop over time. Nettle measured ecological risk
 ## by mean growing season (MGS column in the data), which is how many months per year one can grow crops.
 
-
+nettle <- read.csv("data/nettle.csv")
+glimpse(nettle)
 ## Don't forget to read in the data from somewhere (read_csv()).
-nettle <- readr::read_csv("data/nettle.csv")
 ## Add your own comments as you like!
 ggplot(nettle, aes(x = MGS, y = Langs)) +
   geom_point()
@@ -107,6 +104,9 @@ plot2 <- ggplot(nettle,
 library(gridExtra)
 grid.arrange(plot1, plot2, ncol = 2)
 
+## Alternatively use patchwork
+library(patchwork)
+plot1 + plot2
 
 
 ## Linegraphs ----
@@ -127,7 +127,7 @@ early_january_weather <- weather %>%
 ## Question: Compare the new df with the original using View() or glimpse(). ----
 # How are they different? 
 
-glimpse(early_january_weather)
+
 
 
 

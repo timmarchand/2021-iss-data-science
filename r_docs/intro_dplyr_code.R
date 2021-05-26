@@ -11,28 +11,27 @@ library(dplyr)  # in each relevant script
 library(nycflights13) # in each relevant script
 
 ### install the 'pscl' package to use the 'presidentialElections' data frame
-install.packages("pscl")  # once per machine
+# install.packages("pscl")  # once per machine
 library(pscl)  # in each relevant script
 
 # Look at the dataset
 View(presidentialElections)
 
 ## Select ----
-
+## <SEE SLIDE 16>
 # Select 'year' and 'demVote' (= percentage of vote won by the Democrat)
-# from the 'presidentialElections' df
+# from the 'presidentialElections' df 
 
 votes <- select(presidentialElections,year,demVote) 
-# GENERAL PATTERN
 # select(df,variable_name1, variable_name2)
 # Note there are no quotation marks!
 
 ## BASE R equivalent code: (OKAY TO SKIP)
 ## Extract columns by name
 ## subset [rows,columns] when column is either "year" or "demVote" 
-votes <- presidentialElections[,c("year","demVote")]
+# votes <- presidentialElections[,c("year","demVote")] 
 
-## QUESTION: complete the following code to make a plot showing percentage of votes cast for the Democrat ----
+## DIY: complete the following code to make a plot showing percentage of votes cast for the Democrat ----
 ggplot(data = ____, aes(x=____,y=____))+
   geom_point()
 
@@ -67,18 +66,16 @@ select(presidentialElections,state:year)
 # select all columns except for 'south'
 select(presidentialElections, -south)
 
-## ADVANCED NOTE 
+## ADVANCED NOTE (OKAY TO SKIP): 
 ## select() on a single column will return a dataframe, not a vector
 ## If you want a specific column as a vector, use in combination with pull()
 
 # Filter ----
-
+## <SEE SLIDE 17>
 ## filter() allows you to choose and extract rows from your dataframe
 
 # Filter only rows from the 2008 election
 votes_2008 <- filter(presidentialElections, year == 2008)
-
-## GENERAL PATTERN
 ## filter(df, column_name condition)
 ## Note the double == for equal to!
 ## Opposite is != which means NOT equal to
@@ -96,9 +93,9 @@ votes_colorado_2008 <- filter(
 ## BASE R equivalent code: (OKAY TO SKIP)
 ## Extract columns by name
 ## subset [rows,]  all the rows when the column $year ==2008
-votes_2008 <- presidentialElections[presidentialElections$year == 2008,] 
+# votes_2008 <- presidentialElections[presidentialElections$year == 2008,] 
 
-## QUESTION: complete the following code to make a plot showing only states with majority votes cast for the Democrat ----
+## DIY: complete the following code to make a plot showing only states with majority votes cast for the Democrat ----
 dem_majority <- filter(presidentialElections, ____ > __)
 
 ggplot(data = _____, aes(x=_____,y=______, label=_____))+
@@ -130,7 +127,7 @@ ggplot(data = dem_votes, aes(x=year,y=demVote, label=state))+
   geom_text(check_overlap= TRUE) +
   labs(x = 'Election Year', y = 'Democratic Votes (%)') 
 
-## EXTRA FILTERING with the flights dataset ----
+## DIY: EXTRA FILTERING with the flights dataset ----
 ## Add comments to explain what is happening!
 
 # What is being filtered here?
@@ -216,7 +213,7 @@ presidentialElections <- mutate(
   abs_vote_difference = abs(demVote - other_parties_vote) # using the abs() function
 )
 
-## EXTRA Mutate with flights dataset ----
+## DIY: EXTRA Mutate with flights dataset ----
 
 # Remember the temperatures in the weather df were in Farenheit
 #Question: what does the new column show?
@@ -230,7 +227,7 @@ flights <- flights %>%
   mutate(gain = dep_delay - arr_delay)
 
 ## Arrange ----
-
+## <SEE SLIDE 18>
 ## The arrange () function allows you to sort the rows of your df by some column value
 ## E.g. sort presidentialElections df by year, then within each year sort by percentage
 ## vote for democrat
@@ -244,7 +241,7 @@ presidentialElections <- arrange(presidentialElections, desc(year), demVote) # s
 # Use minus sign (-) or desc() function for descending order
 
 ## Summarise ----
-
+## <SEE SLIDE 19>
 ## summarise() (or US spelling summarize()) generates a new df containing a summary of 
 ## a column, computing a single value from a function on the column values
 
@@ -269,7 +266,7 @@ average_votes
 ## n() for frequencies
 ## sum() for totals
 
-## QUESTIONS with summarise  ----
+## DIY: QUESTIONS with summarise  ----
 
 
 
@@ -329,13 +326,13 @@ summarise(
 
 ## 1. Filter down to only 2008 votes
 votes_2008 <- filter(presidentialElections, year == 2008)
-votes_2008
+
 ## 2. Filter down to the state with the highest demVote
 most_dem_votes <- filter(votes_2008, demVote == max(demVote))
-most_dem_votes
+
 ## 3. Select the name of the state
 most_dem_state <- select(most_dem_votes,state)
-most_dem_state
+
 ## Pros - easy to read and understand later
 ## Cons - you create a lot of new variables which soon clutter up your Environment
 
@@ -385,7 +382,7 @@ most_dem_state <- presidentialElections %>% # start with the df
 ## Cons: Don't forget to put the pipe at the end of a line!
 
 
-## QUESTION: compare these two: ----
+## DIY: compare these two: ----
 weather %>%   
   summarise(mean = mean(temp, na.rm = TRUE)) %>% 
   summarise(std_dev = sd(temp, na.rm = TRUE))
@@ -400,7 +397,7 @@ weather %>%
 
 
 ## group_by ----
-
+## <SEE SLIDE 20-21>
 ## summarise is most powerful when used in combination with another function - group_by()
 ## group_by() lets you group rows together so that you can summarise the grouped data for
 ## things like mean(), sd(), sum(), n() etc
@@ -424,7 +421,7 @@ state_voting_summary <- presidentialElections %>%
     mean_other_parties = mean(other_parties_vote)
   )
 
-# QUESTIONS with the weather and flights dfs ----
+# DIY: QUESTIONS with the weather and flights dfs ----
 
 # What's the difference between these three?
 summary_temp1 <- weather %>% na.omit %>% 
@@ -502,7 +499,7 @@ flights <- flights %>%
     gain_per_hour = gain / hours
   )
 
-## CHALLENGE Make a new df called freq_dest ----
+## DIY: Make a new df called freq_dest ----
 ## take the flights dataset
 ## group by destination
 ## summarise the number of flights with n(), call the variable num_flights
@@ -512,6 +509,7 @@ flights <- flights %>%
 
 
 ## Joining dataframes ----
+## <SEE SLIDE 22-24>
 # Create first example data frame
 profs1 <- tibble(teacher = c("KI","LM"),                      
                     hobby = c("windsurfing", "cinema"))
@@ -571,7 +569,24 @@ inner_join(airports, by = c("dest" = "faa"))
 flights_with_airport_names
 
 
-## CHALLENGE - join airports with freq_dest df to find out the airport names ----
+## DIY CHALLENGE - join airports with freq_dest df to find out the airport names ----
 ## use select to end up with only a 3 column df with dest, name and num_flights
+
+## CODE PLANNING 
+
+## first glimpse at the data, identify the important variables
+
+## next join the dfs, then select columns of interest
+
+## join planes and flights first to match up seats with distance (use by = … for safety)
+
+## join new df with airlines to match up carrier with airline names
+
+## mutate the df to add a new column seat_miles
+
+## summarise the total seat_miles for each airline (group_by name)
+
+## tidy up by arranging in descending order
+
 
 

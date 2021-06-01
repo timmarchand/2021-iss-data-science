@@ -8,10 +8,11 @@ rm(list=ls(all=TRUE))
 # install.packages("nycflights13") # once per machine
 library(ggplot2) # for plotting
 library(dplyr)  # in each relevant script
+install.packages("nycflights13")
 library(nycflights13) # in each relevant script
 
 ### install the 'pscl' package to use the 'presidentialElections' data frame
-# install.packages("pscl")  # once per machine
+install.packages("pscl")  # once per machine
 library(pscl)  # in each relevant script
 
 # Look at the dataset
@@ -20,19 +21,19 @@ View(presidentialElections)
 ## Select ----
 ## <SEE SLIDE 16>
 # Select 'year' and 'demVote' (= percentage of vote won by the Democrat)
-# from the 'presidentialElections' df 
+# from the 'presidentialElections' df
 
-votes <- select(presidentialElections,year,demVote) 
+votes <- select(presidentialElections,year,demVote)
 # select(df,variable_name1, variable_name2)
 # Note there are no quotation marks!
 
 ## BASE R equivalent code: (OKAY TO SKIP)
 ## Extract columns by name
-## subset [rows,columns] when column is either "year" or "demVote" 
-# votes <- presidentialElections[,c("year","demVote")] 
+## subset [rows,columns] when column is either "year" or "demVote"
+# votes <- presidentialElections[,c("year","demVote")]
 
 ## DIY: complete the following code to make a plot showing percentage of votes cast for the Democrat ----
-ggplot(data = ____, aes(x=____,y=____))+
+ggplot(data = votes, aes(x=____,y=____))+
   geom_point()
 
 
@@ -42,7 +43,7 @@ ggplot(data = ____, aes(x=____,y=____))+
 
 ## Advanced 2
 # make a new  votes df from presidentialElections to include the names of states
-# use geom_text to add state names as text on the plot 
+# use geom_text to add state names as text on the plot
 
 ## Advanced 3
 # Run the code below.
@@ -53,9 +54,9 @@ ggplot(votes) +
   facet_wrap(~state)
 
 # Which line of code separated all the states into individual plots?
-# Answer: 
+# Answer:
 # What do you think geom_hline(yintercept=50) did?
-# Answer: 
+# Answer:
 
 
 
@@ -66,7 +67,7 @@ select(presidentialElections,state:year)
 # select all columns except for 'south'
 select(presidentialElections, -south)
 
-## ADVANCED NOTE (OKAY TO SKIP): 
+## ADVANCED NOTE (OKAY TO SKIP):
 ## select() on a single column will return a dataframe, not a vector
 ## If you want a specific column as a vector, use in combination with pull()
 
@@ -93,7 +94,7 @@ votes_colorado_2008 <- filter(
 ## BASE R equivalent code: (OKAY TO SKIP)
 ## Extract columns by name
 ## subset [rows,]  all the rows when the column $year ==2008
-# votes_2008 <- presidentialElections[presidentialElections$year == 2008,] 
+# votes_2008 <- presidentialElections[presidentialElections$year == 2008,]
 
 ## DIY: complete the following code to make a plot showing only states with majority votes cast for the Democrat ----
 dem_majority <- filter(presidentialElections, ____ > __)
@@ -110,7 +111,7 @@ ggplot(data = _____, aes(x=_____,y=______, label=_____))+
 # Don't forget the plus + sign at the end of the geom_text line!
 
 ggplot(data = dem_votes, aes(x=year,y=demVote, label=state)) +
-  geom_text() 
+  geom_text()
 
 
 
@@ -123,9 +124,9 @@ ggplot(data = dem_votes, aes(x=year,y=demVote, label=state)) +
 # The final line in a ggplot is a good place to set the theme
 # Add theme_minimal() or theme_void() or theme_dark(). What happens?
 # Don't forget the plus + sign at the end of the geom_text line!
-ggplot(data = dem_votes, aes(x=year,y=demVote, label=state))+
+ggplot(data = dem_mjority, aes(x=year,y=demVote, label=state))+
   geom_text(check_overlap= TRUE) +
-  labs(x = 'Election Year', y = 'Democratic Votes (%)') 
+  labs(x = 'Election Year', y = 'Democratic Votes (%)')
 
 ## DIY: EXTRA FILTERING with the flights dataset ----
 ## Add comments to explain what is happening!
@@ -139,7 +140,7 @@ alaska_flights <- flights %>%
 #Answer:
 portland_flights <- flights %>%
   filter(dest == "PDX")
-
+View(portland_flights)
 
 # What do '&' and '|' do ?
 #Answer:
@@ -165,7 +166,7 @@ not_BTV_SEA2 <-  flights %>% filter(!dest == "BTV" | dest == "SEA")
 View(not_BTV_SEA1)
 View(not_BTV_SEA2)
 
-# Here are a lot of '|' OR and == equal to operators  
+# Here are a lot of '|' OR and == equal to operators
 many_airports1 <- flights %>%
   filter(dest == "SEA" | dest == "SFO" | dest == "PDX" |
          dest == "BTV" | dest == "BDL")
@@ -217,15 +218,15 @@ presidentialElections <- mutate(
 
 # Remember the temperatures in the weather df were in Farenheit
 #Question: what does the new column show?
-# Answer: 
-weather <- weather %>% 
-  mutate(temp_in_C = (temp - 32) / 1.8)
+# Answer:
+weather <- weather %>%
+  mutate(temp_in_C = (temp - 32) / 1.8, .after = year)
 
 #Question: what does the new column in the flights df show?
-# Answer: 
-flights <- flights %>% 
+# Answer:
+flights <- flights %>%
   mutate(gain = dep_delay - arr_delay)
-
+View(flights)
 ## Arrange ----
 ## <SEE SLIDE 18>
 ## The arrange () function allows you to sort the rows of your df by some column value
@@ -242,7 +243,7 @@ presidentialElections <- arrange(presidentialElections, desc(year), demVote) # s
 
 ## Summarise ----
 ## <SEE SLIDE 19>
-## summarise() (or US spelling summarize()) generates a new df containing a summary of 
+## summarise() (or US spelling summarize()) generates a new df containing a summary of
 ## a column, computing a single value from a function on the column values
 
 # Compute summary statistics 'mean' for the 'presidentialElections' df
@@ -273,12 +274,12 @@ average_votes
 # Why does this code not show the mean?
 # Answer:
 summarise(weather,
-            mean = mean(temp), 
+            mean = mean(temp),
             std_dev = sd(temp))
 
 # na.rm = TRUE is an argument of both mean() and sd(), removing all NA values
 summarise(weather,
-           mean = mean(temp, na.rm = TRUE), 
+           mean = mean(temp, na.rm = TRUE),
           std_dev = sd(temp, na.rm = TRUE))
 
 # you can also use na.omit() function with the pipe operator %>%  as we will see later...
@@ -292,7 +293,7 @@ summarise(weather,
 furthest_from_50 <- function(vec){
   # subtract 50 from each value
   adjusted_values <- vec - 50
-  
+
   # return the element with the largest absolute difference from 50
   vec[abs(adjusted_values) == max(abs(adjusted_values))]
 }
@@ -383,16 +384,16 @@ most_dem_state <- presidentialElections %>% # start with the df
 
 
 ## DIY: compare these two: ----
-weather %>%   
-  summarise(mean = mean(temp, na.rm = TRUE)) %>% 
+weather %>%
+  summarise(mean = mean(temp, na.rm = TRUE)) %>%
   summarise(std_dev = sd(temp, na.rm = TRUE))
 
-weather %>%   
-  summarise(mean = mean(temp, na.rm = TRUE), 
+weather %>%
+  summarise(mean = mean(temp, na.rm = TRUE),
   std_dev = sd(temp, na.rm = TRUE))
 
 ## Why does the first one produce error message?
-#Answer: 
+#Answer:
 
 
 
@@ -424,17 +425,17 @@ state_voting_summary <- presidentialElections %>%
 # DIY: QUESTIONS with the weather and flights dfs ----
 
 # What's the difference between these three?
-summary_temp1 <- weather %>% na.omit %>% 
+summary_temp1 <- weather %>% na.omit %>%
   summarise(mean = mean(temp), std_dev = sd(temp))
 
-summary_temp2 <- weather %>% 
-  group_by(month) %>% 
-  summarise(mean = mean(temp, na.rm = TRUE), 
+summary_temp2 <- weather %>%
+  group_by(month) %>%
+  summarise(mean = mean(temp, na.rm = TRUE),
             std_dev = sd(temp, na.rm = TRUE))
 
-summary_temp3 <- weather %>% na.omit %>% 
-  group_by(month) %>% 
-  summarise(mean = mean(temp), 
+summary_temp3 <- weather %>% na.omit %>%
+  group_by(month) %>%
+  summarise(mean = mean(temp),
             std_dev = sd(temp))
 
 summary_temp1
@@ -443,36 +444,36 @@ summary_temp3
 # Answer:
 
 ## What does this code summarise?
-by_origin <- flights %>% 
-  group_by(origin) %>% 
+by_origin <- flights %>%
+  group_by(origin) %>%
   summarise(count = n())
 
 by_origin
 # Answer:
 
 ## What is the effect of putting two variables in the group_by()?
-by_origin_monthly <- flights %>% 
-  group_by(origin, month) %>% 
+by_origin_monthly <- flights %>%
+  group_by(origin, month) %>%
   summarise(count = n())
 
 by_origin_monthly
 # Answer:
 
 ## Why is this incorrect? What does it show?
-by_origin_monthly_incorrect <- flights %>% 
-  group_by(origin) %>% 
-  group_by(month) %>% 
+by_origin_monthly_incorrect <- flights %>%
+  group_by(origin) %>%
+  group_by(month) %>%
   summarise(count = n())
 
 by_origin_monthly_incorrect
 # Answer:
 
 ## Adding a gain variable to show time gained during flight
-flights <- flights %>% 
+flights <- flights %>%
   mutate(gain = dep_delay - arr_delay)
 
 # Create a full summary of gain
-gain_summary <- flights %>% 
+gain_summary <- flights %>%
   summarise(
     min = min(gain, na.rm = TRUE),
     q1 = quantile(gain, 0.25, na.rm = TRUE), # using quantile() to define IQR first quarter
@@ -488,11 +489,11 @@ gain_summary
 
 ## make a histogram of the gain variable - does it look normal?
 ggplot(data = _____, mapping = aes(x = ____)) +
-  geom_() 
+  geom_()
 # warning message matches are missing variables data
 
 ## -----------------------------------------------------------------------------
-flights <- flights %>% 
+flights <- flights %>%
   mutate(
     gain = dep_delay - arr_delay,
     hours = air_time / 60,
@@ -511,30 +512,30 @@ flights <- flights %>%
 ## Joining dataframes ----
 ## <SEE SLIDE 22-24>
 # Create first example data frame
-profs1 <- tibble(teacher = c("KI","LM"),                      
+profs1 <- tibble(teacher = c("KI","LM"),
                     hobby = c("windsurfing", "cinema"))
 # Create second example data frame
-profs2 <- tibble(teacher = c("LM","TO"),                      
+profs2 <- tibble(teacher = c("LM","TO"),
                     drink = c("tea", "sake"))
 
 profs1
 profs2
 
 # left_join keeps all the rows in the left df, adds NAs if necessary to columns from right df
-left_join(profs1, profs2, by = "teacher") 
+left_join(profs1, profs2, by = "teacher")
 
 
 # inner_join keeps only rows shared between the dfs
-inner_join(profs1, profs2, by = "teacher")  
+inner_join(profs1, profs2, by = "teacher")
 
 # it is the same as doing left_join then na.omit
 left_join(profs1, profs2, by = "teacher") %>% na.omit
 
 # full_join keeps all columns and rows, adds NAs if necessary to all columns
-full_join(profs1, profs2, by = "teacher") 
+full_join(profs1, profs2, by = "teacher")
 
 # Create third example data frame
-profs3 <-  tibble(prof = c("YN","LM","TO"),                     
+profs3 <-  tibble(prof = c("YN","LM","TO"),
                   reading = c("history", "art","sci-fi"))
 
 # no shared column names!
@@ -561,7 +562,7 @@ View(flights_joined)
 airports
 
 # No faa column name in the flights df, but the dest variable uses the same code
-# Join the flights and airports df to get the airport names 
+# Join the flights and airports df to get the airport names
 # using by = c('colname1' = 'colname2')
 flights_with_airport_names <- flights %>%
 inner_join(airports, by = c("dest" = "faa"))
@@ -572,7 +573,7 @@ flights_with_airport_names
 ## DIY CHALLENGE - join airports with freq_dest df to find out the airport names ----
 ## use select to end up with only a 3 column df with dest, name and num_flights
 
-## CODE PLANNING 
+## CODE PLANNING
 
 ## first glimpse at the data, identify the important variables
 

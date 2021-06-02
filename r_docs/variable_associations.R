@@ -1,5 +1,34 @@
 ## Associations between variables set up ----
 
+<<<<<<< HEAD
+## OPTIONAL clear memory
+# rm(list=ls(all=TRUE))
+
+## load libraries
+library(tidyverse)
+# install.packages("ggpubr") # once per machine
+library(ggpubr) # for adding stats to plots
+# install.packages("vcd") # once per machine
+library(vcd) # for chi-squared and mosaic plot
+# install.packages(broom)  # once per machine
+library(broom) # for creating tidy tables from regression models
+# install.packages(moderndive)  # once per machine
+library(moderndive) # more easy to read tables from regression models
+# install.packages(effects)  # once per machine
+library(effects) # ADVANCED: handling of effects
+# install.packages(sjPlot)  # once per machine
+library(sjPlot) # ADVANCED: for plotting of effects
+# install.packages(gapminder)  # once per machine
+library(gapminder) # for data
+
+## Efficeint alternative - use pacman!
+## After installing pacman, all you need is to use the p_load function which will check to see if you have a package installed, install it if need be, and load the libraries
+
+pacman::p_load(tidyverse, ggpubr, vcd, broom, moderndive, sjPlot, gapminder)
+
+## load data from data folders ----
+## load data from data folders ----
+=======
 ## clear memory
 # rm(list=ls(all=TRUE))
 pacman::p_load(tidyverse, ggpubr, vcd, broom, moderndive, sjPlot, gapminder)
@@ -23,12 +52,26 @@ library(moderndive) # more easy to read tables from regression models
 
 
 ## load data from data folders ----
+
 dat <- read_csv("data/africa_guess.csv")
 # df_all <- read_csv("https://tinyurl.com/iss-africa-guess-class")
 # get rid of outlier
 df <- dat %>% filter(height>7)
 
 ## for some real world examples
+
+## get the data from online csv
+resume <- read_csv("https://tinyurl.com/iss-racial-disc-web")
+## save it into your data folder
+write_csv(resume,"data/resume.csv")
+
+## next time, you can load the data directly here
+# resume <- read_csv("data/resume.csv")
+
+## get gapminder data
+gapminder <-  gapminder::gapminder
+
+=======
 resume <- read_csv("data/resume.csv")
 resume <- read_csv("https://tinyurl.com/iss-racial-disc-web")
 
@@ -39,6 +82,7 @@ gapminder <-  gapminder::gapminder
 ## assess association with regression lines
 ## statistical tests from the t-test family (another form of the linear regression)
 
+>>>>>>> 65e9f3eae7de6c7fee15b17a71bb6cd57767f30c
 # check the data
 glimpse(df)
 
@@ -79,7 +123,8 @@ t.test(df_even$guess,df_odd$guess)
 
 ## You can feed the result into tidy() to get a table of the results
 t.test(df_even$guess,df_odd$guess) %>% broom::tidy()
-## here estimate = difference in means
+
+## estimate = difference in means
 ## estimate 1 = mean of group 1
 ## estimate 2 = mean of group 2
 ## statistic = t score
@@ -94,6 +139,9 @@ summary(cat_model)
 ## Pr(>|t|) = probability, or p-value
 ## Multiple R-squared = correlation coefficient
 ## Adjusted R-squared = adjusted in case of multiple variables
+
+
+## From moderndive:
 
 get_regression_summaries(cat_model)
 ## r_squared = correlation coefficient
@@ -123,7 +171,13 @@ regression_points
 ## df
 ## num (make your own abbreviated name)
 
-plot_model(cat_model, type = "pred", terms = c("birthday"))
+
+## using sjPlot
+## assign the model to model.01
+
+model.01 <- cat_model
+set_theme(base = theme_sjplot())
+plot_model(model.01, type = "pred", terms = c("count_task"))
 
 
 # install.packages(effects)  # once per machine
@@ -149,10 +203,9 @@ plot(num, ylim=range(df$guess), xlab="Birthday date even_odd", grid=TRUE)     # 
 ## assess association with regression lines
 ## statistical tests from the t-test family (another form of the linear regression)
 
-library(gapminder)
-library(moderndive)
 
-## Examine whether there is a difference associated between conintent and life expectancy in 2007
+
+## Examine whether there is a difference associated between continent and life expectancy in 2007
 
 ## filter for 2007
 gapminder2007 <- gapminder %>%
@@ -210,14 +263,6 @@ set_theme(base = theme_light())
 
 plot_model(model.01, type = "pred", terms = c("continent")) +theme_sjplot()
 
-cbind(coef(model.01), confint(model.01))
-(preds.hyp <- data.frame(cont<- effect("continent", model.01)))
-
-head(predict(model.01)) # the 'predictions' of the model for the current data
-
-### determine the nature of the effect(s) graphically
-plot(cont, ylim=range(gapminder2007$lifeExp), xlab="Continent", grid=TRUE)
-
 
 ## categorical vs categorical ----
 ## compare joint frequencies in contingencies tables
@@ -227,7 +272,10 @@ plot(cont, ylim=range(gapminder2007$lifeExp), xlab="Continent", grid=TRUE)
 attach(df)
 table(birthday)
 table(visit)
-table(number,visit)
+<<<<<<< HEAD
+table(birthday,visit)
+=======
+
 # get a table of the proportions
 prop.table(table(visit)) # values between 0 ~ 1
 # multiply by 100 for percentages
@@ -237,25 +285,27 @@ round(prop.table(table(birthday))*100)
 
 ## to get a relative frequency table, use the margin argument
 # margin = 2 selects the columns, so now the columns add up to 100%
-round(prop.table(table(number,visit),margin = 2)*100)
+
+round(prop.table(table(birthday,visit),margin = 2)*100)
 # margin = 1 selects the rows, so now the rows add up to 100%
-round(prop.table(table(number,visit),margin = 1)*100)
+round(prop.table(table(birthday,visit),margin = 1)*100)
 
 ## contingency tables, put two vectors together
-table(number, visit) # first value for rows, second value for columns
+table(birthday, visit) # first value for rows, second value for columns
 
 ## easily get the chi-squared value using summary()
-summary(table(number, visit))
-# p-value = 0.3618 - of course, no significant difference
+summary(table(birthday, visit))
+# p-value = 0.9791 - of course, no significant difference
 # Chi-squared approximation may be incorrect message - because 'yes' column very small
 
 # use fisher exact test as alternative
-fisher.test(number,visit) # p-value = 1!!
+fisher.test(birthday,visit) # p-value = 1!!
+
 
 
 ## plotting bar chart with ggplot
 ggplot(df) +
-  aes(x = visit, fill = number) +
+  aes(x = visit, fill = birthday) +
   geom_bar() +
   scale_fill_viridis_d(option = "cividis") +
   coord_flip() +
@@ -263,11 +313,12 @@ ggplot(df) +
 
 ## plotting with a mosaic plot from vcd package
 ## some useful stats
-assocstats(table(number, visit))
+<<<<<<< HEAD
+assocstats(table(birthday, visit))
 # Pearson value same as the p=value above
 
 ##the mosaic plot
-mosaic(~ number + visit,
+mosaic(~ birthday + visit,
        direction = c("v", "h"),
        data = df,
        shade = TRUE)
@@ -286,6 +337,9 @@ detach(df)
 # Are Emily and Greg more employable than Lakisha and Jamal?
 # A field experiment on labor market discrimination.
 # American economic review, 94(4), 991-1013.
+
+# https://www.aeaweb.org/articles?id=10.1257/0002828042002561
+
 
 
 glimpse(resume)
@@ -337,7 +391,9 @@ mosaic(~ race + call,
 ## which group is significantly under-represented (black)
 
 
-## CHALLENGE: use dplyr verbs to create a new df with new columns: ----
+
+## DIY: use dplyr verbs to create a new df with new columns: ----
+
 ## black_male, black_female, white_male and white_female applicants
 ## find out if there is evidence for racial discrimination  for both sexes
 
@@ -422,7 +478,7 @@ ggplot(df) +
   aes(x = height, y = guess) +
   geom_point() +
   geom_smooth(method = "lm")  +
- geom_abline(mapping=aes(slope=0.333, intercept=-14.1)) +
+ geom_abline(mapping=aes(slope=0.359, intercept=-19.5)) +
   xlim(0,200) +
   ylim(-20,100) +
   ggpubr::stat_cor(method="pearson") +
@@ -496,7 +552,9 @@ gapminder %>%
 ## much nicer regression line and bigger R value! (0.81 vs 0.58)
 
 
-## let's make two models - one withou log transformed variables
+
+## let's make two models - one without log transformed variables
+
 gdp_life_model01 <- lm(lifeExp ~ gdpPercap, data = gapminder)
 
 # details
@@ -521,5 +579,9 @@ summary(gdp_life_model02)
 get_regression_summaries(gdp_life_model02)
 get_regression_table(gdp_life_model02)
 
-get_regression_points(gdp_life_model02)
+
+regression_points <- get_regression_points(gdp_life_model02)
 regression_points
+
+
+

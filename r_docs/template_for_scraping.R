@@ -6,7 +6,7 @@ pacman::p_load(tidyverse,rvest,clipr,datapasta)
 
 ## (1) Use clipr package
 ## Advantages - quick and easy
-## Disadvantages - not reproducible; might accidently paste the wrong data
+## Disadvantages - not reproducible; might accidentally paste the wrong data
 ## create a dataframe from whatever is copied  on your clipboard
 dat <- clipr::read_clip_tbl()
 ## save data immediately
@@ -30,7 +30,7 @@ col2 <-
 ## Coding method using rvest ----
 ##Get CSS with selector gadget and use rvest
 ## Advantages - clear steps, reproducible, easy to extend
-## Disdvantage - requires some coding!
+## Disadvantages - requires some coding!
 
 # assign url and CSS values - don't forget to use ""
 url <-
@@ -49,10 +49,10 @@ dat <- tibble(col1 = vec1,
 ### Alternative: One pipe chain
 
 dat <- tibble(col1 = read_html(url) %>%
-                        html_nodes(CSS2) %>%
+                        html_nodes(CSS1) %>%
                         html_text(),
               col2 =  read_html(url) %>%
-                        html_nodes(CSS) %>%
+                        html_nodes(CSS2) %>%
                         html_text())
 
 # Check and Wrangle data
@@ -60,7 +60,6 @@ dat <- tibble(col1 = read_html(url) %>%
 --------------------------------------------------------------
 
 
-# Visualise data ----------------------------------------------------------
 
 
 

@@ -33,16 +33,20 @@ votes <- select(presidentialElections,year,demVote)
 # votes <- presidentialElections[,c("year","demVote")]
 
 ## DIY: complete the following code to make a plot showing percentage of votes cast for the Democrat ----
-ggplot(data = votes, aes(x=____,y=____))+
-  geom_point()
+
+ggplot(data = ____, aes(x=____,y=____))+
 
 
-## Advanced 1
+
+Advanced 1
 # add an alpha argument to show overplotting
 # change the color of the points
 
 ## Advanced 2
 # make a new  votes df from presidentialElections to include the names of states
+
+votes <- select()
+
 # use geom_text to add state names as text on the plot
 
 ## Advanced 3
@@ -110,8 +114,11 @@ ggplot(data = _____, aes(x=_____,y=______, label=_____))+
 # Add the labels 'Election Year' and 'Democratic Votes (%)' as a layer
 # Don't forget the plus + sign at the end of the geom_text line!
 
-ggplot(data = dem_votes, aes(x=year,y=demVote, label=state)) +
-  geom_text()
+
+ggplot(data = dem_majority, aes(x=year,y=demVote, label=state)) +
+  geom_text() +
+
+
 
 
 
@@ -124,6 +131,7 @@ ggplot(data = dem_votes, aes(x=year,y=demVote, label=state)) +
 # The final line in a ggplot is a good place to set the theme
 # Add theme_minimal() or theme_void() or theme_dark(). What happens?
 # Don't forget the plus + sign at the end of the geom_text line!
+
 ggplot(data = dem_mjority, aes(x=year,y=demVote, label=state))+
   geom_text(check_overlap= TRUE) +
   labs(x = 'Election Year', y = 'Democratic Votes (%)')
@@ -220,7 +228,11 @@ presidentialElections <- mutate(
 #Question: what does the new column show?
 # Answer:
 weather <- weather %>%
+
+  mutate(temp_in_C = (temp - 32) / 1.8)
+
   mutate(temp_in_C = (temp - 32) / 1.8, .after = year)
+
 
 #Question: what does the new column in the flights df show?
 # Answer:

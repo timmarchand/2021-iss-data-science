@@ -38,7 +38,7 @@ Go ahead and launch RStudio, and open a new R Markdown file. Recall, to open a n
 *  Select R Markdown, as in the image below. 
 
 
-![](figures/how.to.open.rmd.png){width=200px}
+![](../figures/how.to.open.rmd.png){width=200px}
 
 <br> 
 
@@ -48,7 +48,7 @@ Once you have opened the document:
 *  Add an author line, following the example below. You need quotation marks!
 *  Delete any extra code (everything from line 7 down).
 
-![](figures/set_up.png){width=100%}
+![](../figures/open_rmd.png){width=50%}
 
 <br> 
 
@@ -360,7 +360,7 @@ ggplot(data = nc, aes(x = mage, y = weeks)) +
 ### Data visualization table
 This table is a great resource for thinking about how to visualize data. 
 
-![](figures/graph.table.png)
+![](../figures/graph.table.png)
 
 Table 3.5 from Modern Dive 
 http://moderndive.netlify.com/index.html

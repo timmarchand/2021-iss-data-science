@@ -299,4 +299,17 @@ ggplot(data = weather, mapping = aes(x = factor(month), y = temp)) +
 # The dots representing values falling outside the whiskers are called outliers. If outliers are present, the whisker on the appropriate side is drawn to 1.5 * IQR rather than the data minimum or the data maximum. 
 
 
+## PLay around with mpg dataset ----
+
+## ggplot2 packages comes with the mpg dataset, which is featured in many tutorials on R
+mpg
+
+## try to experiment on  data visualisation with this dataset (remember it's okay to copy, paste and tweak!)
+
+## when reflecting on this week's code, you can add a code chunk in your weekly_notes (Ctrl+ALT+I on Windows, Cmd+Opt+I on Mac) if you want to show off what you discovered 
+
+
+
+
+
 

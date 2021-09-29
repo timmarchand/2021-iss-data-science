@@ -1,60 +1,24 @@
 ## Associations between variables set up ----
 
-<<<<<<< HEAD
 ## OPTIONAL clear memory
 # rm(list=ls(all=TRUE))
 
 ## load libraries
-library(tidyverse)
-# install.packages("ggpubr") # once per machine
-library(ggpubr) # for adding stats to plots
-# install.packages("vcd") # once per machine
-library(vcd) # for chi-squared and mosaic plot
-# install.packages(broom)  # once per machine
-library(broom) # for creating tidy tables from regression models
-# install.packages(moderndive)  # once per machine
-library(moderndive) # more easy to read tables from regression models
-# install.packages(effects)  # once per machine
-library(effects) # ADVANCED: handling of effects
-# install.packages(sjPlot)  # once per machine
-library(sjPlot) # ADVANCED: for plotting of effects
-# install.packages(gapminder)  # once per machine
-library(gapminder) # for data
+# library(tidyverse)
+# library(ggpubr) # for adding stats to plots
+# library(vcd) # for chi-squared and mosaic plot
+# library(broom) # for creating tidy tables from regression models
+# library(moderndive) # more easy to read tables from regression models
+# library(effects) # ADVANCED: handling of effects
+# library(sjPlot) # ADVANCED: for plotting of effects
+# library(gapminder) # for data
 
 ## Efficeint alternative - use pacman!
-## After installing pacman, all you need is to use the p_load function which will check to see if you have a package installed, install it if need be, and load the libraries
-
-pacman::p_load(tidyverse, ggpubr, vcd, broom, moderndive, sjPlot, gapminder)
-
-## load data from data folders ----
-## load data from data folders ----
-=======
-## clear memory
-# rm(list=ls(all=TRUE))
-pacman::p_load(tidyverse, ggpubr, vcd, broom, moderndive, sjPlot, gapminder)
-
-
-
-## load libraries
-library(tidyverse)
-
-# install.packages("ggpubr") # once per machine
-library(ggpubr) # for adding stats to plots
-
-# install.packages("vcd") # once per machine
-library(vcd) # for chi-squared and mosaic plot
-
-# install.packages(broom)  # once per machine
-library(broom) # for creating tidy tables from regression models
-
-# install.packages(moderndive)  # once per machine
-library(moderndive) # more easy to read tables from regression models
-
+pacman::p_load(tidyverse, ggpubr, vcd, broom, moderndive, effects, sjPlot, gapminder)
 
 ## load data from data folders ----
 
 dat <- read_csv("data/africa_guess.csv")
-# df_all <- read_csv("https://tinyurl.com/iss-africa-guess-class")
 # get rid of outlier
 df <- dat %>% filter(height>7)
 
@@ -82,7 +46,7 @@ gapminder <-  gapminder::gapminder
 ## assess association with regression lines
 ## statistical tests from the t-test family (another form of the linear regression)
 
->>>>>>> 65e9f3eae7de6c7fee15b17a71bb6cd57767f30c
+
 # check the data
 glimpse(df)
 

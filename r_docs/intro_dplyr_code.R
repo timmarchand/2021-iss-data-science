@@ -6,14 +6,13 @@ rm(list=ls(all=TRUE))
 ### dplyr package
 # install.packages("dplyr") # once per machine
 # install.packages("nycflights13") # once per machine
-library(ggplot2) # for plotting
-library(dplyr)  # in each relevant script
-install.packages("nycflights13")
-library(nycflights13) # in each relevant script
+# library(ggplot2) # for plotting
+# library(dplyr)  # in each relevant script
+# library(nycflights13) # in each relevant script
+# library(pscl)  # in each relevant script
 
-### install the 'pscl' package to use the 'presidentialElections' data frame
-install.packages("pscl")  # once per machine
-library(pscl)  # in each relevant script
+## use pacman::p_load for convenience
+pacman::p_load(ggplot2,dplyr,nycflights13,pscl)
 
 # Look at the dataset
 View(presidentialElections)
@@ -38,7 +37,7 @@ ggplot(data = ____, aes(x=____,y=____))+
 
 
 
-Advanced 1
+## Advanced 1
 # add an alpha argument to show overplotting
 # change the color of the points
 
@@ -51,7 +50,7 @@ votes <- select()
 
 ## Advanced 3
 # Run the code below.
-ggplot(votes) +
+ggplot(presidentialElections) +
   aes(x = year, y = demVote) +
   geom_point(size = 1L, colour = "#0c4c8a") +
   geom_hline(yintercept=50) +

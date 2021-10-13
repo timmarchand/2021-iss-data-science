@@ -165,7 +165,7 @@ But this line is not straight! The model is probably overfitting the data, which
 
 The following picture is an example of someone who designed a bed based on an overfitted model!:
 
-![](../figures/overfitting.jpeg)
+![](../figures/overfitting.jpeg){width = 100%}
 
 What we want instead is to tell the `geom_smooth`function to fit a linear model, which is easily done using the `method = "lm"` argument.
 

@@ -21,6 +21,10 @@ pacman::p_load(tidyverse, ggpubr, infer, vcd, broom, moderndive, effects, sjPlot
 ## load data from data folders ----
 
 dat <- read_csv("data/africa_guess.csv")
+
+## If this doesn't work
+## dat <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQul_g9GtsSj-30sQ2hOE_rixxy8gH6AdhawcT5AoRJodJdGZnBgqtwgDAmfab0CJ1AjmFCrKmVw5MA/pub?gid=1799592268&single=true&output=csv")
+
 # get rid of outlier
 df <- dat %>% filter(height>7)
 

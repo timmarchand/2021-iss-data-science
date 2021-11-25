@@ -12,9 +12,7 @@ output:
 # Data Importing and "Tidy" Data {#tidy}
 
 ```{r setup_tidy, include=FALSE, purl=FALSE}
-# Used to define Learning Check numbers:
-chap <- 4
-lc <- 0
+
 
 # Set R code chunk defaults:
 knitr::opts_chunk$set(
@@ -73,7 +71,7 @@ pacman::p_load(tidyverse, nycflights13, fivethirtyeight)
 # library(readxl)
 pacman::p_load(kableExtra, stringr, scales, knitr, readxl, here)
 
-dem_score <-  read_excel(here::here("data","dem_score.xlsx"))
+dem_score <-  read_csv(here::here("data","dem_score.csv"))
 ```
 
 

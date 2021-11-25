@@ -41,7 +41,7 @@ penguins %>% count(sex)
 
 penguins %>% 
   ggplot(aes(species)) +
-  geom_histogram(stat = "count")
+  geom_histogram()
 
 
 ## Only if you add an extra argument!
@@ -97,7 +97,7 @@ penguins %>%
 penguins %>% 
   ggplot(aes(bill_length_mm, body_mass_g, color = species, shape = species)) +
   geom_point() +
-  scale_color_manual(values = c("darkorange","purple","cyan4")) +
+  scale_color_manual(values = c("darkorange","purple","cyan4")) 
   
 
 
@@ -105,7 +105,7 @@ penguins %>%
   ggplot(aes(body_mass_g, flipper_length_mm, color = species, shape = species)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_color_manual(values = c("darkorange","purple","cyan4")) +
+  scale_color_manual(values = c("darkorange","purple","cyan4"))
   
 
 ### categorical vs continuous (box-plots or faceted histograms)
@@ -202,7 +202,7 @@ penguins %>% drop_na() %>%
   ggplot(aes(body_mass_g, flipper_length_mm, color = sex)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_color_manual(values = c("darkorange","purple","cyan4")) +
+  scale_color_manual(values = c("darkorange","purple","cyan4")) 
   
 
 num_model3 <- lm(body_mass_g ~ flipper_length_mm + species, data = penguins)
@@ -214,8 +214,13 @@ penguins %>% drop_na() %>%
   ggplot(aes(body_mass_g, flipper_length_mm, color = species)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_color_manual(values = c("darkorange","purple","cyan4")) +
+  scale_color_manual(values = c("darkorange","purple","cyan4")) 
   
+
+num_model4 <- lm(body_mass_g ~ flipper_length_mm + species + sex, data = penguins)
+get_regression_summaries(num_model4)
+get_regression_table(num_model4)
+get_regression_points(num_model4)
 
 
 num_model_A <- lm(bill_depth_mm ~ bill_length_mm, data = penguins)
@@ -242,3 +247,4 @@ penguins %>%
 
 
 ### We have an example of Simpsons's Paradox!!
+

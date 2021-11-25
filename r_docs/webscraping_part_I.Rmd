@@ -100,7 +100,7 @@ programming such as javascript.
 This is what the webpage linked above looks like to us when we visit it
 via a browser such as Explorer or Chrome:
 
-<br><br> ![](../figures/1 WHO Rankings.png) <br><br>
+<br><br> ![](../figures/WHO_rankings.png) <br><br>
 
 But this is not what the web page actually looks like to our browser. To
 view the "source code" of the web page, we can use Chrome's dropdown
@@ -411,7 +411,21 @@ use the code below and change the urls, variables and variable names as
 necessary.
 
 ```{r}
-## Copied from above
+## Quick and easy table scraping
+
+wiki_page <- "https://en.wikipedia.org/wiki/List_of_highest-grossing_films_in_the_United_States_and_Canada"
+
+## isolate the table nodes
+wiki_table <- wiki_page %>% 
+read_html %>% 
+  html_nodes("table") %>% 
+  html_table(fill = TRUE) %>% 
+  purrr::pluck(1) %>% 
+  janitor::clean_names()
+
+
+
+## Pinpoint table scraping
 
 ## read in the url
 wiki_page <- "https://en.wikipedia.org/wiki/List_of_highest-grossing_films_in_the_United_States_and_Canada"

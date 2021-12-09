@@ -808,6 +808,8 @@ In this tutorial we worked through several functions from the `stringr` package.
 
 ##### str_remove()
 
+##### str_squish()
+
 ### Regex
 
 Here are some of the regexes that was used in this review:

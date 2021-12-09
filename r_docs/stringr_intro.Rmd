@@ -447,7 +447,7 @@ Now that we have processed that, we can join the subsetted dataframe back to the
 
 ```{r join stow_fate to stow_df}
 stow_df <- 
-  stow_fate %>% left_join(stow_fate,.)
+  stow_fate %>% left_join(stow_df,.)
 ```
 
 

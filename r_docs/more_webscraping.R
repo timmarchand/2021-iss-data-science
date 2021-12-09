@@ -311,7 +311,10 @@ write_csv(plot_reviews, "data/top_250_plot_reviews.csv")
 
 ## Challenges ----
 
+## IMDB
 
+## Filter to find movies that are in the list around a significant year for you
+## (Birthday etc)
 
 ## IMDB directors
 

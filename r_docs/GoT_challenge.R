@@ -1,4 +1,4 @@
-## Is there a significant difference in the average ratings by season? (Think of season as categorical data). 
+ s## Is there a significant difference in the average ratings by season? (Think of season as categorical data). 
 
 library(tidyverse)
 library(moderndive)
@@ -22,8 +22,8 @@ get_regression_summaries(GoT_model)
 ## nobs = number of observations
 
 get_regression_table(GoT_model)
-## (Intercept) estimate = predicted value for the base category (i.e mean for even guess)
-## numberodd estimate = predicted change in value for going from even to odd
+## (Intercept) estimate = predicted value for the base category (i.e mean overall for each season)
+## season1 etc estimate = predicted change in value for going from mean overall to that season
 ## statistic = t value
 ## lower_ci = lower confidence interval
 ## upper_ci = upper confidence interval

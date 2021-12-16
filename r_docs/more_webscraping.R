@@ -83,6 +83,9 @@ html <- read_html(url)
 
 # film_titles <- read_csv(film, file = "data/film_titles.csv")
 
+title <- html %>% 
+  html_nodes(css1) %>% 
+  html_text() %>% str_squish()
 
 year <- html %>% 
   html_nodes(css2) %>% 

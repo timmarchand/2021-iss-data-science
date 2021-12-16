@@ -15,6 +15,9 @@ who_html <- who_news %>%
   mutate(html = map(url, ~read_html(.x)))
 who_html
 
+## IF THIS DOES NOT WORK, SOME OF THE LINKS MIGHT BE DEAD
+## Re-create the data frame from the webscraping part II file!
+
 ## map html_nodes and html_text on the list column
 ## this creates a new list column called text
 who_text <- 
@@ -111,13 +114,11 @@ film_tib <- tibble(rank = 1:250,
 
 ## get html nodes for each film link:
 
-# tib_html <- film_tib %>% 
-#   mutate(html = map(link,~.x %>% read_html))
+ tib_html <- film_tib %>% 
+   mutate(html = map(link,~.x %>% read_html))
 
-## This code may take a long time, so you can skip it and use the readRDS instead!
-## Uncomment and run in your own time
+## This code may take a long time, so go do something else while it runs!
 
-tib_html <- readRDS("data/tib_html.rds")
 
 ## director details ---- 
 
@@ -137,14 +138,11 @@ tib_director <- tib_html %>%
   
   ## Now we can go to the director pages, and grab the necessary details from there
 
+ director_html <- tib_director %>% 
+                    mutate(html = map(link,~.x %>% read_html))
 
-#  director_html <- tib_director %>% 
-# mutate(html = map(link,~.x %>% read_html))
+## This code may take a long time, so go do something else while it runs!
 
-  ## This  code will take a long time, so you can skip it and use the readRDS instead!
-  ## Uncomment and run in your own time
-  
-director_html <-   readRDS("data/director_html.rds")
 
 
 ## css for bio details

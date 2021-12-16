@@ -1,0 +1,501 @@
+---
+title: "Strings and Regex"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 5
+    code_download: true
+---
+
+<br>
+
+
+```{r, setup, include = FALSE}
+library(tidyverse)
+library(rvest)
+library(knitr)
+
+## For the regex tables
+url <- "https://www.hackerearth.com/practice/machine-learning/advanced-techniques/regular-expressions-string-manipulation-r/tutorial/"
+read_html(url) %>% html_nodes("td")  %>% 
+  html_text() -> regex1
+
+matrix(regex1,nrow = 53,ncol = 2, byrow = T) %>% as_tibble() -> regex
+
+names(regex) <- c("Function","Details")
+regex
+
+regex[12:13,] -> grep
+
+grep$`Stringr` <- c("str_which for index, str_subset for value", "str_detect")
+grep_df <- grep %>% select(Function, Stringr, Details)
+
+regex[18:31,] -> quant_df
+names(quant_df) <- c("Character","Details")
+quant_df$Character <- str_replace_all(string = quant_df$Character, "\\\\", "\\\\\\\\\\\\\\\\")
+
+regex[33:41,] -> sets
+names(sets) <- c("Set","Description")   
+sets[8,2] <- "matches everything except vowels: consonants"
+tribble(~Set,~Description,
+        "[^\\\\W]+","matches everything that is not a non-word character") -> qwe
+bind_rows(sets,qwe) -> sets
+
+```
+
+
+This tutorial is designed to take you further into string manipulation and introduce more `stringr` functions and regular expression examples.
+
+
+# Regular Expressions and String Manipulation
+
+>Some people, when confronted with a problem, think
+“I know, I'll use regular expressions.”   Now they have two problems. [Jamie Zawinski]
+
+Regular Expressions (a.k.a regex) are a set of pattern matching commands used to detect string sequences in a large text data. These commands are designed to match a family (alphanumeric, digits, words) of text which makes then versatile enough to handle any text / string class.
+
+In short, using regular expressions you can get more out of text data while writing shorter codes.
+
+For example, let's say you've scraped some data from the web. The data contains the log time of users. You want to extract log time. But, the data is really messy. It is contaminated with html div(s), javascript functions, and what not! In such situations, you should use regular expressions.
+
+Other than R, regular expressions are also available in Python, Ruby, Perl, Java, Javascript, etc.
+
+## What is String Manipulation?
+
+As the name suggests, string manipulation comprises a series of functions used to extract information from text variables. In machine learning, these functions are being widely used for doing feature engineering, i.e., to create new features out of existing string features. In R, we have packages such as stringr and stringi which are loaded with all string manipulation functions.
+
+In addition, R also comprises several base functions for string manipulations. These functions are designed to complement regular expressions. The practical differences between string manipulation functions and regular expressions are
+
+* We use string manipulation functions to do simple tasks such as splitting a string, extracting the first three letters, etc.. We use regular expressions to do more complicated tasks such as extract email IDs or date from a set of text.
+* String manipulation functions are designed to respond in a certain way. They don't deviate from their natural behavior. Whereas, we can customize regular expressions in any way we want.
+
+
+For example, suppose you are given a data set comprising the name of the customer as a variable. In this case, we can use string manipulation functions to extract and create new features as first name and last name.
+
+## String manipulation in R
+
+From the next section onward, we'll learn string manipulation functions and commands practically. For this, you will need to install the `stringr` R package, which you should have already if you have the `tidyverse` package.
+
+```{r}
+library(stringr)
+```
+
+R's base paste function is used to combine (or paste) set of strings. It is quite frequently used in creating / re-structuring variable names. For example, let's say, you want to combine first names and family names to create a new string of full names For neatness, we'll separate the resultant values using an "_" (underscore).
+
+(As you will have sen by now, using the underscore between text is a "tidy" way to avoid having spaces in character strings. This is known as `snake_case`.
+
+A useful function I recommend on all your data is `janitor::clean_names()` which converts all your variable names to `snake_case`.
+
+Other formats for avoiding spaces include `Cobra_Case`, `camelCase`, `PascalCase`, `dot.case` and `skewer-case`)
+
+```{r}
+name1 <- "tim"
+name2 <- "marchand"
+
+fullname <- paste(name1,name2,sep = "_")
+fullname
+
+```
+
+The stringr equivalent is `str_c`, which stands for "string combine" or "string concatenate".
+
+```{r}
+## stringr alternative with skewer case
+fullname <- str_c(name1,name2, sep = "-")
+fullname
+```
+
+Another common use of `paste` is to **collapse** a vector of elements with a number of strings into a single element, defining what should separate the characters with the `collapse =` argument.
+
+```{r}
+example <- c("does", "this","vector","have", "more","than","one","element?")
+example
+
+paste(example, collapse = " ")
+str_c(example, collapse = " ")
+
+```
+
+## More string manipulations
+
+Let's look at some other string manipulations using some text we can scrape from the faq page of the ISS website. 
+
+```{r}
+  iss_page<-read_html("https://www.univ.gakushuin.ac.jp/iss/en/faq.html")
+  iss_faq<-html_nodes(iss_page, css="h4 , p , h3") %>% 
+  html_text()
+  
+  string <- iss_faq[2]
+```
+
+In each case we will see the `Base R` functions and the `stringr` equivalents.
+
+The reason to look at both is because you will often see the `Base R`  in some code you might want to copy and paste, while it is probably easier to use the `stringr` ones yourself as they all start with `str_`, and you can use the tab key in RStudio to select the one you want.
+
+Let's start simply with calculating the "length" of a string by counting all the characters. Not to be confused with `length()` which counts the number of elements in a vector
+
+```{r}
+# count number of characters (not words)
+
+nchar("how many letters, spaces and punctuation marks are there?") # 57
+
+nchar(string) # 689
+str_length(string) # 689
+
+length(string) #  1 - just one element in the vector!
+```
+
+When using text data, you often want to ignore capital letters, so that you have no problems when counting them etc. One of the first steps then is to change all the characters to lower case. 
+
+``` {r}
+#convert to lower
+# tolower(string)
+str_to_lower(string)
+
+str_to_lower(c("Thursday","THURSDAY","ThursDay" ))
+
+#convert to upper (not so commonly used)
+# toupper(string)
+str_to_upper(string)
+```
+
+Another very common operation you might want to carry out is replacing certain strings (a bit like find and replace in a Word document). 
+
+You can either do this for the **first** match you find --- `sub()` , `str_replace()`.
+
+Or for **all** matches --- `gsub()`, `str_replace_all()`.
+
+Note how the argument order is different for `Base R` and `stringr` functions -- one reason being that the `stringr` functions fit more easily with a ` %>% ` pipe.
+
+```{r}
+#find and replace first match
+str_replace(string, pattern = "we", replacement = "THE WONDERFUL ISS")
+#find and replace all matches
+str_replace_all(string, "the","\tthe\t") -> string2 # save this for later
+
+# equivalent in base R
+# sub(pattern = "our",replacement = "THE FABULOUS ISS's", x = string, ignore.case = T)
+# gsub(pattern = "our",replacement = "their",x = string,ignore.case = T)
+
+```
+
+
+One more useful string manipulation function is to split strings along certain boundaries. This can be a useful function for handling messy variables, but as we shall see later, is one way to **tokenize** a text.
+
+```{r}
+#split strings
+# This returns a list object
+str_split(string = c("ID-101","ID-102","ID-103","ID-104"),pattern = "-")
+# You have the option of simplifying the object to a matrix
+str_split(string = c("ID-101","ID-102","ID-103","ID-104"),pattern = "-",simplify = T)
+
+# Using regex, you can get a list of the words in a string (aka tokenize)
+# Use unlist() to change into a character vector
+str_split(string,"\\W") %>% unlist() 
+
+# Equivalent in Base R
+# strsplit(x = c("ID-101","ID-102","ID-103","ID-104"),split = "-")
+# strsplit(string, "\\W")
+```
+
+The pattern parameter in the functions above also accept regular expressions, as in the last example. These functions when combined with regular expressions can do highly complex search operations. Now, let's learn about regular expressions.
+
+## Handling text with regular expressions
+
+To demonstrate why you need to learn some *regex*, let's return to an issue we encountered when screen-scraping, and another we just created. 
+
+```{r}
+# What's the difference?
+string2
+cat(string2)
+```
+
+The function `cat()` stands for concatenate and print. It is a simple way of seeing how text would *look* when printed. Quite often when you scrape web data, you will also capture strange characters such as `\t` and `\n` interspersed throughout the text we scraped. 
+
+We mentioned before that these are html tags, or chunks of code that tell your web browser how to display something (in this case a "tab" space and a new line).
+
+If you wanted to remove these from your text, you could use the search and replace expressions we looked at above, replacing the characters with *empty* strings (`""`):
+
+```{r}
+str_replace_all(string2,"\n","")
+
+# In Base R
+# gsub(pattern = "\t", replacement = "",string2)
+```
+
+We can also pass two arguments at once using the `|` separator as follows:
+
+```{r}
+str_replace_all(string2,"\t|\n","")
+
+# In Base R
+# gsub("\t|\n", "", string2)
+```
+
+
+A useful `stringr` function can do this in one line, removing any extra whitespaces too:
+
+```{r}
+str_squish(string2)
+```
+
+## GREP
+
+Another important tool for working with text is GREP, which stands for "Globally search a regular expression and print." In laymans terms, GREP is a tool that helps you search for the presence of a string of characters that matches a pattern.
+
+```{r}
+knitr::kable(grep_df) 
+```
+
+Once again, GREP-style commands search for a certain pattern. For example, let's write some code that determines whether the word "international" or "social" is part of our string using the `grepl` function in base R, and the str_detect function from `stringr`:
+
+```{r}
+str_detect(string, "social")
+
+# In Base R
+#grepl("international", string)
+```
+
+The text within quotes is the pattern we are trying to find, and the other argument is the string we want to search within. The output tells us that there was at least one occurrence of "international" and "social" respectively.
+
+To see the value of using GREP type commands, it is best to look at longer string vectos.
+
+First, let's use more from our scrape of the ISS website.
+
+```{r}
+str_detect(iss_faq, "international")
+str_which(iss_faq, "international")
+str_subset(iss_faq, "international")
+
+# In Base R
+# grepl("international", iss_faq)
+# grep("international", iss_faq)
+# grep("international", iss_faq, value = TRUE)
+```
+
+Here, `str_detect` (and the equivalent `base::grepl`) gives us a logical condition for each element in our iss_faq vector, `str_which` (`base::grep`) returns the index position within the input vector, and `str_subset` (`grep` with `value = TRUE`) returns the completely matched strings.
+
+Note you can also use the function `str_extract` to pick out **only** the pattern match you are interested in. This last function is very useful in combination with some of the regex patterns which we will come to later.
+
+```{r}
+
+str_extract(iss_faq,"social") # grabs first one
+str_extract_all(iss_faq,"social") # returns a list
+```
+
+
+The benefit of these functions can be seen more clearly when used with a dataframe. Recall the dataframe we created from the Friends IMDb ratings, including plot details.
+
+```{r}
+friends <- read_csv("https://tinyurl.com/iss-friends-web")
+glimpse(friends)
+
+## clean up with str_squish
+
+friends$plot <- str_squish(friends$plot)
+```
+
+Now we can use GREP commands to find out which plots mention a certain character.
+
+```{r}
+friends %>% filter(str_detect(string = plot, pattern = "Joey")) 
+```
+
+Or even create a new "dummy" variable showing whether a plot features a character or not:
+
+```{r}
+friends %>% mutate(with_Joey = str_detect(plot,"Joey")) %>% select(title,with_Joey)
+```
+
+We can find out the total number and proportion of plots featuring a character by taking advantage of the fact that logical vectors can be added and averaged out.
+
+```{r}
+friends %>% summarise(sum_Joey = sum(str_detect(plot,"Joey")),
+                      av_Joey = mean(str_detect(plot,"Joey")))
+```
+
+
+## Quantifiers and  matching sequences
+
+Quantifiers are the shortest to type, but these tiny atoms are immensely powerful. One position here and there can change the entire output value. Quantifiers are mainly used to determine the length of the resulting match. Always remember, that quantifiers exercise their power on items to the immediate left of it.  
+
+As the name suggests, matching sequences contain special characters used to describe a pattern in a given string. 
+
+```{r}
+knitr::kable(quant_df)
+```
+
+These quantifiers can be used with metacharacters, sequences, and character classes to return complex patterns. Combinations of these quantifiers help us match a pattern. The nature of these quantifiers is better known in two ways:
+
+* Greedy Quantifiers : The symbol `.*` is known as a greedy quantifier. It says that for a particular pattern to be matched, it will try to match the pattern as many times as its repetition are available.
+* Non-Greedy Quantifiers : The symbol `.?` is known as a non-greedy quantifier. Being non-greedy, for a particular pattern to be matched, it will stop at the first match.
+
+Let's look at an example of greedy vs. non-greedy quantifier. From the given number, apart from the starting digit, we want to extract this number till the next digit '1' is detected. The desired result is 101.
+
+```{r}
+number <- "101000000000100"
+
+#greedy
+str_extract(number, pattern = "1.*1")
+
+
+#non greedy
+str_extract(number, pattern = "1.?1")
+```
+
+It works like this: the greedy match starts from the first digit, moves ahead, and stumbles on the second '1' digit. Being greedy, it continues to search for '1' and stumbles on the third '1' in the number. Then, it continues to check further but couldn't find more. Hence, it returns the result as "1010000000001." On the other hand, the non-greedy quantifier, stops at the first match, thus returning "101."
+
+Let's look at a few more examples of quantifiers:
+
+```{r}
+names <- c("anna","crissy","puerto","cristian","garcia","steven","alex","rudy")
+
+#doesn't matter if e is a match
+str_subset(names, pattern = "e*")
+
+
+#must match t one or more times
+str_subset(names, pattern = "t+")
+
+
+#must match n two times
+str_subset(names, pattern = "n{2}")
+```
+
+Now we turn to matching sequences. This code chunk also introduces another useful `stringr` function, `str_count`.
+
+```{r}
+sentence <- "I have been to Kyoto 20 times"
+
+# match and replace a digit
+str_replace_all(sentence, pattern = "\\d+",replacement = "##")
+# count all the digits
+str_count(string = sentence, pattern = "\\d") # each individually
+str_count(string = sentence, pattern = "\\d+") # in a sequence
+
+# extract the digits
+str_extract(sentence, "\\d+")
+str_extract_all(sentence, "\\d")
+
+# match and replace a non-digit
+str_replace_all(sentence, pattern = "\\D",replacement = "_")
+# extract a non-digit
+str_extract(sentence, "\\D+")
+
+# match and replace a space 
+str_replace_all(sentence, pattern = "\\s+", replacement = "_")
+# count the numner of spaces
+str_count(string = sentence, pattern = "\\s+")
+
+#match and extract all word characters
+str_extract_all(sentence, "\\w+")
+```
+
+
+## Character Sets
+
+```{r}
+knitr::kable(sets)
+```
+
+Here are a couple of examples using Character Sets:
+
+```{r}
+news <- "20 people got killed in the mob attack. 14 got severely injured"
+
+# extract numbers
+str_extract_all(news,"[0-9]+")
+
+# what is the difference between the following?
+str_extract_all(news,"[^\\W]+")
+str_extract_all(news,"[^\\s]+")
+
+```
+
+
+## Anchors and Grouping
+
+```{r, echo = FALSE}
+groups <- tribble(~Regex,~Description,
+                  "^", "string starts with the following regex",
+                  "$", "string ends with the preceding regex",
+                  "(...)","group matches for reference",
+                  "\\\\\\\\1","return the first grouped reference",
+                  "\\\\\\\\2","return the first grouped reference")
+knitr::kable(groups)
+```
+
+The final regex we will look at helps you locate precisely the text you want to handle or manipulate. 
+
+By default, regular expressions will match *any* part of a string. It’s often useful to anchor the regular expression so that it matches from the start or end of the string.
+
+```{r}
+fruit <- c("apple", "banana", "pear")
+
+## Is there an "a" anywhere?
+str_detect(fruit, "a")
+## Is there an "a" at the start of the string?
+str_detect(fruit,"^a")
+## Is there an "a" at the end of the string?
+str_detect(fruit,"a$")
+
+## How would you match *only* apple from the following character vector?
+apple <- c("apple pie", "apple", "apple cake")
+
+```
+
+One practical use of anchors is to find files with a certain extension in your directory:
+
+```{r}
+list.files("..", pattern = "*.csv$", recursive = TRUE)
+```
+
+Finally, let's look at grouping and backward reference, returning to the friends dataframe from before.
+
+Let's say you wanted to change the season variable to only include numbers.
+First, try to figure out some regex to capture all the necessary text by having a look at the text. You can take a sample to get an idea:
+
+```{r}
+friends %>% select(season) %>% sample_n(20)
+```
+
+The text looks fairly consistent, so you maybe you can use a fairly simple regex `"Season\\s\\d"`. Let's use a helper function I created to help you `see` the results of a regex pattern match:
+
+```{r}
+## load the function see()
+source("../r_docs/see_regex.R")
+
+## get the distinct values of season, pull to a vector form
+qwe <- friends %>% distinct(season) %>% pull
+
+## see the results of our pattern match
+see(rx = "Season\\s\\d", string = qwe)
+```
+
+Unfortunately, I failed to notice that there were 10 seasons, so I chopped off the final zero from Season 10! Let's be a bit more general, but use anchors to fix the start and the end `"^\\w+\\s\\d+$"`. This means we should start with a word character plus similar, then match a whitespace, then match number characters at the end of the string:
+
+```{r}
+see(rx = "^\\w+\\s\\d+$",qwe)
+```
+
+That seems better. Now to use the grouping and referencing:
+
+```{r}
+friends$season <- friends$season %>% 
+  str_replace_all(pattern = "(^\\w+\\s)(\\d+$)", # captures two groups
+                  replacement = "\\2")  #return only the second group
+# have a look
+friends %>% select(season) %>% sample_n(20)
+```
+
+That seemed to work! As with most things with regex, and R in general, there are many ways to achieve the same goal. We'll look at another way of handling digits and text in a little while.
+
+### Challenges with the *friends* dataframe
+
+```{r}
+## Using the friends dataframe, can you work out the plots featuring which of the main characters ("Monica","Rachel","Ross","Chandler","Rachel","Joey","Phoebe") had the highest average rating?
+
+## Have a look at the titles. Can you find any common patterns? How would you group them by their titles? Practice regex expressions using the see() function, then try to group them by extracting them into different groups.Can you summarise any information after grouping the titles by pattern?
+
+
+```

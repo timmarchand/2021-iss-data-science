@@ -1,10 +1,9 @@
 ## load libraries
-# install.packages("franc") un-comment if necessary
-library(franc) # we will use this to detect the language of reviews
-library(rvest)
-library(tidyverse)
-library(sentimentr) # for polarity of opinion analysis
-library(lexicon) # for information about words
+pacman::p_load(tidyverse,
+               rvest,
+               franc, # we will use this to detect the language of reviews
+               sentimentr, # for polarity of opinion analysis
+               lexicon) # for information about words
 
 source("r_docs/grab_amazon_full.R")
 source("r_docs/see_regex.R")

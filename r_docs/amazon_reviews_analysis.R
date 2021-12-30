@@ -3,6 +3,7 @@ pacman::p_load(tidyverse,
                rvest,
                franc, # we will use this to detect the language of reviews
                sentimentr, # for polarity of opinion analysis
+               imputeTS, # to deal with NAs
                lexicon) # for information about words
 
 source("r_docs/grab_amazon_full.R")

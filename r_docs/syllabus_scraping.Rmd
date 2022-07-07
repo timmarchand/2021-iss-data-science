@@ -1,0 +1,346 @@
+---
+title: "Webscraping syllabus case study"
+author: "Tim Marchand"
+date: '2022-07-06'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(tidyverse, stringi, rvest)
+
+## CSS selectors
+author_css <- "tr:nth-child(23) tr:nth-child(4) .cell_border_y~ .cell_border_y+ .cell_border_y , .syllkmok tr:nth-child(12) .cell_border_y~ .cell_border_y+ .cell_border_y , .syllkmok tr:nth-child(4) .cell_border_y~ .cell_border_y+ .cell_border_y , tr:nth-child(23) tr:nth-child(12) .cell_border_y~ .cell_border_y+ .cell_border_y"
+## year
+year_css <- "tr:nth-child(23) tr:nth-child(16) .cell_border_y:nth-child(3) , tr:nth-child(23) tr:nth-child(8) .cell_border_y:nth-child(3) , .syllkmok tr:nth-child(16) .cell_border_y:nth-child(3) , .syllkmok tr:nth-child(8) .cell_border_y:nth-child(3)"
+## title
+title_css <- ".syllkmok tr:nth-child(4) .cell_border_y:nth-child(1) , .syllkmok tr:nth-child(12) .cell_border_y:nth-child(1) , tr:nth-child(23) tr:nth-child(12) .cell_border_y:nth-child(1) , tr:nth-child(23) tr:nth-child(4) .cell_border_y:nth-child(1)"
+## publisher
+publisher_css <- "tr:nth-child(23) tr:nth-child(16) .cell_border_y:nth-child(1) , .syllkmok tr:nth-child(8) .cell_border_y:nth-child(1) , .syllkmok tr:nth-child(16) .cell_border_y:nth-child(1) , tr:nth-child(23) tr:nth-child(8) .cell_border_y:nth-child(1)"
+```
+
+The three most common ways to manipulate text strings:
+
+-   split them with `str_split()`
+-   extract from them with `str_extract()` and `str_extract_all()`
+-   remove or replace bits from them with `str_replace()` and `str_remove_all()`
+
+In this example, we will look at the first two by taking a text clump from the g-port syllabus page for Prof Inui as an example, and trying to arrange the text into usable data of course titles and URLs.
+
+Here is the clump in question:
+
+```{r}
+string <- "社会科学のためのデータ分析	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U510601101&value(crclumcd)=2442017000
+経済成長論	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U510701101&value(crclumcd)=2442017000
+The Economic Development of Japan	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U510706601&value(crclumcd)=2442017000
+Globalization, Economic Growth and Income Distribution	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U510801101&value(crclumcd)=2442017000
+専門演習Ⅰ	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U511800103&value(crclumcd)=0900000001
+専門演習Ⅱ	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U511801103&value(crclumcd)=0900000001
+卒業論文・卒業演習	https://g-port.univ.gakushuin.ac.jp/campusweb_gk/slbssbdr.do?value(risyunen)=2022&value(semekikn)=1&value(kougicd)=U511900102&value(crclumcd)=0900000001
+"
+
+length(string)
+```
+
+We can see that it is a character vector with a length of 1. We want to extract from it the course titles and URL links to each syllabus. Let's see how we can do that with each method in turn.
+
+### Split strings
+
+First lets try the `str_split()` function. This function splits a string into smaller sections on a user defined pattern. The pattern itself disappears from the result, and we are left with a character vector as long as the number of splits that were made. Let's look at a quick example.
+
+```{r}
+fruits <- c(
+  "apples and oranges and pears and bananas",
+  "pineapples and mangos and guavas"
+)
+fruits
+```
+
+For example, splitting fruits on "and" results in:
+
+```{r}
+fruits %>% 
+  str_split("and")
+```
+
+> What happened to the "and" words in the string? Why do you think the result is a list? What could we do with the extra white spaces?
+
+The result is a list with 2 character vectors of different lengths. The "and" words were used to split the vector, and were eliminated as a result.
+
+To collapse the list we could use the `unlist()`function, and to remove unnecessary white spaces (and new lines in some cases), we can use the `str_squish()` function:
+
+```{r}
+fruits %>% 
+  str_split("and") %>% 
+  unlist() %>% 
+  str_squish()
+```
+
+Turning to our string, let's see what we can split on. A handy function to help with this is the `str_view_all()` which let's us look at the what our pattern matches. For example, you might think that using a whitespace might be a good way to split the string between course title and URL:
+
+```{r}
+str_view_all(string, "\\s") # \\s is regex for any whitespace
+```
+
+However, that seems to capture too many spaces, including the whitespace between the English words in course titles. Let's try on a tab mark instead:
+
+```{r}
+str_view_all(string, "\t") # \t is regex for any tab
+```
+
+Okay, that seems to work! Let's give it a go:
+
+```{r}
+string %>% 
+  str_split("\t")
+```
+
+> Why is this not the desired result?
+
+The problem with this now is that most course titles are appended to the end of the previous course's URL. To deal with this we can use str_split() twice. Once to split on the tab mark and everything in front of it to collect the URLS, and a second time on the tab mark and everything behind it to collect the course titles. We can do this with some regex:
+
+```{r}
+# split for  URLs
+str_view_all(string, ".*\t") # .* is wildcard regex for for anything
+
+# split for course titles
+str_view_all(string, "\t.*") # .* is wildcard regex for for anything
+
+```
+
+Let's do the split then, and then tidy up by unlisting the results, getting rid of unnecessary whitespaces and removing empty strings:
+
+```{r}
+link <- 
+  string %>% 
+  str_split(".*\t") %>% 
+  unlist() %>% 
+  str_squish() %>% 
+  stri_remove_empty()
+link
+```
+
+And again for course titles:
+
+```{r}
+course <- 
+  string %>% 
+  str_split("\t.*") %>% 
+  unlist() %>% 
+  str_squish() %>% 
+  stri_remove_empty()
+course
+```
+
+### Extract strings
+
+Another very common way of handling strings is by substracting shorter strings from longer texts. Again a quick example:
+
+```{r}
+shopping_list <- c("apples x4", "bag of flour", "bag of sugar", "milk x2")
+shopping_list
+```
+
+Let's start by extracting just the numbers:
+
+```{r}
+str_extract_all(shopping_list, "\\d") %>% # \\d is regex for any digit
+  unlist() ## to simplify into a character vector
+```
+
+Now let's see which bags we wanted:
+
+```{r}
+str_extract_all(shopping_list, "bag of .+") %>% 
+  unlist() ## to simplify into a character vector
+```
+
+> What did the regex .+ do?
+
+We can be a bit more sophisticated by using a lookaround regex:
+
+```{r}
+# ?<= means lookahead but don't capture what is in the parentheses
+str_extract_all(shopping_list, "(?<=bag of ).+") %>%  
+  unlist() ## to simplify into a character vector
+```
+
+In this case we extracted just the text which followed "bag of ".
+
+In our example from the syllabus page, we can see how to use lookarounds with str_view_all() again:
+
+```{r}
+str_view_all(string, ".+(?=\t)") # this regex means all characters before a tab
+```
+
+That seems to capture all the course titles!
+
+```{r}
+string %>% 
+  str_extract_all(".+(?=\t)")
+```
+
+> What happens when we use .\* instead? Why?
+
+There is a very subtle, but important difference between `.*` and `.+`. The former means "any character 0 or multiple times". The latter means "any character 1 or multiple times". It can make a big difference when extracting!
+
+Now let's check for the course links:
+
+```{r}
+string %>% 
+  str_extract_all("(?<=\t).+") # note the difference between (?=) and (?<=)
+```
+
+Putting these together we get:
+
+```{r}
+course <- 
+  string %>% 
+  str_extract_all(".+(?=\t)") %>% 
+  unlist()
+
+link <- 
+  string %>% 
+  str_extract_all("(?<=\t).+") %>% 
+  unlist()
+ 
+course
+link
+```
+
+### Using the new strings
+
+Now let's use the new strings by creating a dataframe with course titles as one column, and the links as another. For reference, we will also add a column identifying Prof Inui as the teacher:
+
+```{r}
+dat <- tibble(professor = "Inui",
+              course,link)
+dat
+```
+
+We can now use this tibble as a basis for scraping further information from each syllabus. For example, let's say we wanted to know the reading lists from all of Prof Inui's courses.
+
+> Go to one of the course pages and find the CSS for the books listed in a course
+
+```{r}
+
+## uncomment when you have found the selectors
+
+## author
+#author_css <- ""
+
+## year
+#year_css <- ""
+
+## title
+#title_css <- ""
+
+## publisher
+#publisher_css <- ""
+
+```
+
+Once you have found the correct CSS, you can test out whether your scraping will work before automating the process:
+
+```{r}
+beta <-
+dat %>%
+  pull(link) %>%
+  .[3]
+
+html <- read_html(beta)
+author <- html %>%
+          html_nodes(author_css) %>%
+          html_text(trim = TRUE)
+
+year <- html %>%
+    html_nodes(year_css) %>%
+    html_text() %>%
+    parse_number()
+
+title<- html %>%
+  html_nodes(title_css) %>%
+  html_text(trim = TRUE)
+
+publisher <- html %>%
+  html_nodes(publisher_css) %>%
+  html_text(trim = TRUE)
+
+tibble(author,year,title,publisher)
+```
+
+If it worked for our test link, it should be okay for the others, so let's automate the process by mapping the scraping function over the list of links:
+
+```{r}
+reading_list <-
+dat %>%
+  mutate(
+    author = map(link, ~read_html(.x)) %>%
+      map(html_nodes, author_css) %>%
+      map(html_text) %>%
+      map(str_squish),
+    year = map(link, ~read_html(.x)) %>%
+      map(html_nodes, year_css) %>%
+      map(html_text) %>%
+      map(parse_number),
+    title = map(link, ~read_html(.x)) %>%
+      map(html_nodes, title_css) %>%
+      map(html_text) %>%
+      map(str_squish),
+    publisher = map(link, ~read_html(.x)) %>%
+      map(html_nodes, publisher_css) %>%
+      map(html_text) %>%
+      map(str_squish))
+
+## this has now created 3 new list columns
+## to see the details we need to unnest the list columns
+
+reading_list %>%
+  # remove link column as longer needed
+  select(-link) %>%
+  unnest(cols = c(author,year,title,publisher))
+```
+
+Finally, let's say we are only interested in the courses taught in English.
+
+> How could we filter the dataframe to only show the courses taught in English?
+
+At ISS, course titles in English are also taught in English, so we could use that information to filter appropriately. English characters and Japanese characters have different **encodings**, which is something we can check using functions from the `stringi` package.
+
+```{r}
+langs <- c("English","日本語")
+
+## test whether character coding is in ascii format (commonly used in English)
+stringi::stri_enc_isascii(langs)
+```
+
+The `stri_enc_isascii()` function tests whether an input string matches the encoding commonly used in English text, but importantly not used in Japanese. Therefore we could use it here to return a column of TRUE or FALSE depending on whether the course title is written using the `ascii` encoding.
+
+```{r}
+dat %>% 
+  mutate(eng = stri_enc_isascii(course)) %>% 
+  filter(eng)
+```
+
+> Why would you choose to filter for English course titles before scraping?
+
+### Final challenge
+
+Get a full list of reading materials for ISS social science courses taught in English
+
+-   Grab the data for all ISS social science teachers
+-   Filter for only those courses taught in English
+-   Scrape the reading lists for each course taught in English
+
+```{r}
+
+string %>% str_split("\t|\n") %>%
+  unlist() %>% 
+  stri_remove_empty() %>% 
+  tibble(string = .) %>% 
+  mutate(head = rep(c("course","link"), 7)) %>% 
+  pivot_wider(names_from = head, values_from = string) %>% 
+  unchop(everything())
+
+
+```

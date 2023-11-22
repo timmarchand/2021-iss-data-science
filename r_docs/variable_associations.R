@@ -10,38 +10,75 @@
 # library(vcd) # for chi-squared and mosaic plot
 # library(broom) # for creating tidy tables from regression models
 # library(moderndive) # more easy to read tables from regression models
-# library(effects) # ADVANCED: handling of effects
 # library(sjPlot) # ADVANCED: for plotting of effects
 # library(gapminder) # for data
-# library(janitor) # for tabyl() function
 
 ## Efficeint alternative - use pacman!
-pacman::p_load(tidyverse, ggpubr, infer, vcd, broom, moderndive, effects, sjPlot, gapminder, janitor)
+pacman::p_load(tidyverse, ggpubr, infer, vcd, broom, moderndive, sjPlot, gapminder)
 
-## load data from data folders ----
+## load data ----
+## loading from Google sheets iss_random2023
 
-dat <- read_csv("data/africa_guess.csv")
+## Note steps:
 
-## If this doesn't work
-## dat <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQul_g9GtsSj-30sQ2hOE_rixxy8gH6AdhawcT5AoRJodJdGZnBgqtwgDAmfab0CJ1AjmFCrKmVw5MA/pub?gid=1799592268&single=true&output=csv")
+## File >> Share >> Publish to web 
+## Link >> Sheet1 + Comma-separated values (.csv)
+## Publish
 
-# get rid of outlier
-df <- dat %>% filter(height>7)
 
+dat <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRjfypxrmzzs_iGMOqvZV-bIOH-DozVxczPiJLe3UCUS51W_XONCjZ5NkEdW5eIGycW3df8jnZPkPm9/pub?gid=1492388919&single=true&output=csv")
+
+### Was there something funny about the height data?
+dat %>% 
+  arrange(height)
+
+## Two options
+
+# filter out outliers
+dat %>% 
+  filter(height>7) %>% 
+  arrange(height)
+
+## mutate if less than 100, then filter 
+
+dat %>% 
+  mutate(height = ifelse(height < 100, height*100, height)) %>% 
+  arrange(desc(height)) #%>% 
+ # filter(height < 200)
+
+## make a new variable
+df <- dat %>% 
+  mutate(height = ifelse(height < 100, height*100, height)) %>% 
+  filter(height < 200)
+
+write_csv(df,"data/random.csv")
+df <- read_csv("data/random.csv")
 ## for some real world examples
-
 ## get the data from online csv
 resume <- read_csv("https://tinyurl.com/iss-racial-disc-web")
+
+## check with glimpse
+glimpse(resume)
+
+## call is numeric, so let's create another column to make it a factor
+
+resume <- 
+resume %>% 
+  mutate(fct_call = ifelse(call == 0, "no", "yes"))
 ## save it into your data folder
 write_csv(resume,"data/resume.csv")
 
 ## next time, you can load the data directly here
 resume <- read_csv("data/resume.csv")
 
-## get gapminder data
+## get gapminder data from package
 gapminder <-  gapminder::gapminder
 
-## continuous vs categorical:  africa-n_africa data----
+####################################################################
+####################################################################
+
+
+## CONTINUOUS vs CATEGORICAL:  birthday-n_africa data----
 ## compare values with box plots or faceted histograms
 ## assess association with regression lines
 ## statistical tests from the t-test family (another form of the linear regression)
@@ -58,7 +95,6 @@ ggplot(df) +
   labs(x = "Birthday date", y = "Guess for how many countries in Africa", title = "Boxplot of African guesses by odd/even birthday") +
   theme_minimal() +
   stat_compare_means(method = "t.test")
-## Still potentially different somehow...
 
 ## Density plot again
 ggplot(df) +
@@ -89,7 +125,8 @@ t.test(df_even$n_africa,df_odd$n_africa)
 
 
 ## You can feed the result into tidy() to get a table of the results
-t.test(df_even$n_africa,df_odd$n_africa) %>% broom::tidy()
+t.test(df_even$n_africa,df_odd$n_africa) %>% 
+  tidy()
 
 ## estimate = difference in means
 ## estimate 1 = mean of group 1
@@ -125,7 +162,7 @@ summary(cat_model)
 
 get_regression_summaries(cat_model)
 ## r_squared = correlation coefficient
-## adj_r_squared = adjusted r squared, adjusted for multiople variables
+## adj_r_squared = adjusted r squared, adjusted for multiple variables
 ## statistic = F-statistic
 ## nobs = number of observations
 
@@ -136,8 +173,9 @@ get_regression_table(cat_model)
 ## lower_ci = lower confidence interval
 ## upper_ci = upper confidence interval
 
-regression_points <- get_regression_points(cat_model)
-regression_points
+
+get_regression_points(cat_model)
+
 ## n_africa_hat shows the predicted values for the model (the means)
 ## residuals shows the difference between the fitted (predicted) values and the real (n_africa) values
 
@@ -146,38 +184,17 @@ regression_points
 ## (OKAY TO SKIP, or paste for your own project)
 ## EFFECTS PLOTS show you the nature of the statistical test
 ## Replace the following variables for your own data:
-## n_africa
-## number
-## df
-## num (make your own abbreviated name)
-
+## cat_model
+## birthday
 
 ## using {sjPlot}
 ## assign the model to model.01
 
 model.01 <- cat_model
-set_theme(base = theme_sjplot())
 plot_model(model.01, type = "pred", , terms = c("birthday"))
 
-## using {effects} package
 
-### determine the nature of the effect(s) numerically
-
-# returns the estimates and 95% confidence interval values
-cbind(coef(model.01), confint(model.01)) 
-(preds.hyp <- data.frame(num <- effect("birthday", model.01)))
-
-## check which parts match the get_regression_table output!
-
-# get the 'predictions' of the model for the current data using predict
-head(predict(model.01)) 
-## check which parts match the get_regression_points output!
-
-### determine the nature of the effect(s) graphically
-plot(num, ylim=range(df$n_africa), xlab="Birthday date even_odd", grid=TRUE)     # prediction
-
-
-## continuous vs categorical:  real world data----
+## CONTINUOUS vs MULIT-CATEGORICAL:  real world data----
 ## compare values with box plots or faceted histograms
 ## assess association with regression lines
 ## statistical tests from the t-test family (another form of the linear regression)
@@ -235,28 +252,7 @@ get_regression_points(lifeExp_model, ID = "country")
 ## EFFECTS PLOTS show you the nature of the statistical test
 ## variable names have been replaced
 
-set_theme(base = theme_light())
-plot_model(lifeExp_model, type = "pred", terms = c("continent")) +
-  theme_sjplot()
-
-
-## Base R and {effects} alternative
-## Alternative to get_regression_table(lifeExp_model)
-(preds.hyp <- data.frame(num <- effect("continent", lifeExp_model)))
-
-# get the 'predictions' of the model for the current data using predict
-## Alternative to get_regression_points(lifeExp_model)
-gapminder2007 %>% 
-  mutate(lifeExp_hat = predict(lifeExp_model),
-         residual = lifeExp - lifeExp_hat)
- 
-### determine the nature of the effect(s) graphically
-## Alternative to plot_model
-## Get effect details
-num <- effect("continent", lifeExp_model)
-## Plot in Base R
-plot(num,  xlab="Continent", grid=TRUE)     # prediction
-
+plot_model(lifeExp_model, type = "pred", terms = c("continent")) 
 
 ## categorical vs categorical ----
 ## compare joint frequencies in contingencies tables
@@ -264,64 +260,46 @@ plot(num,  xlab="Continent", grid=TRUE)     # prediction
 ## plot joint frequencies with bar plots or mosaic plots
 
 ## Use {Base R} table()
-attach(df)
-table(birthday)
-table(visit)
-table(birthday,visit)
+table(df$birthday)
+table(df$visit)
 
 # get a table of the proportions
-prop.table(table(visit)) # values between 0 ~ 1
+prop.table(table(df$visit)) # values between 0 ~ 1
 # multiply by 100 for percentages
-prop.table(table(birthday))*100
+prop.table(table(df$birthday))*100
 # use round for nicer numbers
-round(prop.table(table(birthday))*100)
+round(prop.table(table(df$birthday))*100)
 
-## to get a relative frequency table, use the margin argument
-# margin = 2 selects the columns, so now the columns add up to 100%
-round(prop.table(table(birthday,visit),margin = 2)*100)
-# margin = 1 selects the rows, so now the rows add up to 100%
-round(prop.table(table(birthday,visit),margin = 1)*100)
 
 ## contingency tables, put two vectors together
-table(birthday, visit) # first value for rows, second value for columns
+table(df$birthday, df$visit) # first value for rows, second value for columns
 
 ## easily get the chi-squared value using summary()
-summary(table(birthday, visit))
-# p-value > 0.9 - of course, no significant difference
+summary(table(df$birthday, df$visit))
+# p-value > 0.8.4 - of course, no significant difference
 # Chi-squared approximation may be incorrect message - because 'yes' column very small
 
 # use fisher exact test as alternative
-fisher.test(birthday,visit) # p-value = 1!!
-detach(df)
+fisher.test(df$birthday,df$visit) # p-value = 1!!
 
-## Alternative to tables with {dplyr} and {janitor} ----
-## Use count to create a tidy dataframe
-df %>% count(birthday)
-df %>% count(visit)
-df %>% count(birthday,visit)
-## Add proportions
-df %>% count(birthday, visit) %>%  
-  mutate(prop = prop.table(n))
-
-## Alternative with {janitor}
-df %>% tabyl(birthday,visit) %>% adorn_percentages()
 
 ## Chisq_test with {infer} ----
-df %>% chisq_test(formula = birthday ~ visit)
+df %>% 
+  chisq_test(formula = birthday ~ visit)
 
 
 ## plotting bar chart with ggplot
 ggplot(df) +
   aes(x = visit, fill = birthday) +
   geom_bar() +
- # scale_fill_viridis_d(option = "cividis") + # for a fancy colour scheme
+  scale_fill_viridis_d(option = "cividis") + # for a fancy colour scheme
   coord_flip() + # change x and y axis
   theme_minimal()
 
 ## plotting with a mosaic plot from vcd package
 ## some useful stats from assocstats() function
-attach(df)
-assocstats(table(birthday, visit))
+
+assocstats(table(df$birthday, df$visit))
 # Pearson value same as the p_value above
 
 ##the mosaic plot
@@ -330,7 +308,6 @@ mosaic(~ birthday + visit,
        data = df,
        shade = TRUE)
 
-detach(df)
 
 ## Real world example - racial discrimination in the labour market ----
 # Does racial discrimination exist in the labor market? Or, should racial disparities
@@ -366,9 +343,15 @@ summary((table(resume$race,resume$call)))# p-value < 0.001
 
 ### Tidy alternative with {infer}
 
-resume %>% mutate(call = factor(call)) %>% # change call to a factor (categorical) variable
- # mutate(call = factor(call)) %>%   ##  the response variable is expected to be categorical error
+resume %>% 
   infer::chisq_test(call ~ race)
+
+## Error: The response variable of `call` is not appropriate since the response 
+## variable is expected to be categorical.
+
+## Use fct_call instead
+resume %>% 
+  infer::chisq_test(fct_call ~ race)
 
 
 ## plotting bar chart with ggplot
@@ -384,18 +367,16 @@ resume %>%
 ## check the problem with the variables
 class(resume$race)
 class(resume$call)
-## call is saved as a numeric variable!
+## remember call is saved as a numeric variable!
 
 ## change to logical and try again
 ## plotting bar chart with ggplot
-resume %>% mutate(call = factor(call)) %>% 
-  ggplot(aes(x = race, fill = call)) +
+resume %>% 
+  ggplot(aes(x = race, fill = fct_call)) +
   geom_bar() +
   scale_fill_viridis_d(option = "cividis") +
   coord_flip() +
-  theme_minimal()
-
-
+  theme_minimal() 
 
 ## plotting with a mosaic plot from vcd package
 
@@ -408,9 +389,31 @@ mosaic(~ race + call,
        shade = TRUE)
 
 ## this mosaic plot is now shaded to show which group
-## is significantly over-represented (white) and
-## which group is significantly under-represented (black)
+## is significantly over-represented (in blue) and
+## which group is significantly under-represented (in red)
 
+## Using linear regression on categorical - categorical data ----
+ glimpse(resume)
+
+## call variable has been coded into dummy 1 and 0 variables
+## This means we can also use lm to calculate chi.squared!
+
+cat_cat_model <- lm(call ~ race, resume)
+
+## use summary
+summary(cat_cat_model) 
+
+## or use moderndive functions:
+get_regression_summaries(cat_cat_model)
+# statistic almost the same as chi.square test result
+# p_value = significant!
+
+get_regression_table(cat_cat_model)
+# intercept estimate = call mean for base variable (black names)
+# race: white estimate = added value to base (white names)
+
+####################################################################
+####################################################################
 
 
 ## DIY: use dplyr verbs to create a new df with new columns: ----
@@ -425,8 +428,10 @@ mosaic(~ race + call,
 ## ungroup
 ## select only new applicant and call variables
 
+####################################################################
+####################################################################
 
-## continuous vs continuous  africa-guess data ----
+## CONTINUOUS vs CONTINUOUS  africa-guess data ----
 ## compare values with scatter plots
 ## assess association with regression lines
 ## statistical tests from the R-squared family (or the linear model of regression)
@@ -438,25 +443,22 @@ ggplot(df) +
   aes(x = height, y = n_africa) +
   geom_point() +
   geom_smooth(method = "lm")  +
-  ggpubr::stat_cor(method="pearson") +
+  ggpubr::stat_cor(method = "spearman") + # this works without specifying method
   theme_minimal()
 
 ## simple correlations without plotting
-## working on vectors
-attach(df)
+## working on vectors -- use $ to extrat vectors from df
+
 ## this give the the R value, or slope of the line
-cor(x=height, y=n_africa)
+cor(x=df$height, y=df$n_africa)
 ## you can choose a method depending on the nature of the data
-cor(x = height, y = n_africa, method = "spearman")
+cor(x = df$height, y = df$n_africa, method = "spearman")
 
 ## to get other statistics, you can use cor.test
-cor.test(height,n_africa, method = "pearson")
+## and broom::tidy() to make it easy to read
+cor.test(df$height,df$n_africa, method = "pearson") %>% 
+  tidy()
 
-## if you save the result as an object...
-res <- cor.test(height,n_africa, method = "pearson")
-
-## you can produce a nice table using the broom::tidy function
-broom::tidy(res)
 ## estimate = correlation
 ## statistic = t score
 ## parameter = degrees of freedom
@@ -467,80 +469,65 @@ broom::tidy(res)
 ## if it crosses over 0, there's a good chance there is no relationship at all
 ## as evidenced by the high p.value
 
-## note that for many correlation tests, the variables are assumed to be distributed normally
-## always good practice to check that first
-detach(df)
-
-
+## note that for many correlation tests, the variables are assumed to be distributed 
+## normally -- always good practice to check that first
 
 ## QUESTION - how can you check variables have normal distribution? ----
 
 
 ## linear regression models for two continuous variables ----
-
 cont_model <- lm(formula = n_africa ~ height, data = df)
 summary(cont_model)
 get_regression_summaries(cont_model)
-get_regression_table(cont_model)
+get_regression_table(cont_model) ## note the estimates for intercept and height
 get_regression_points(cont_model)
 
 
-## Our original plot, but now with expanded x and y axes
+## Our original plot, but now with expanded x axis
 ggplot(df) +
   aes(x = height, y = n_africa) +
   geom_point() +
   geom_smooth(method = "lm")  +
-  xlim(0,200) +
-  ylim(-20,100) +
+ # geom_abline(mapping=aes(slope=0.037, intercept=36.1)) +
+   xlim(0,200) +
   ggpubr::stat_cor(method="pearson") +
   theme_minimal()
 
-## another plot, this time with geom_abline added
-## using the intercept value as the estimate for Intercept
+## uncomment the geom_abline
+## using the intercept value as the estimate for intercept
 ## and the the slope value as the estimate for height
 
-ggplot(df) +
-  aes(x = height, y = n_africa) +
-  geom_point() +
-  geom_smooth(method = "lm")  +
- geom_abline(mapping=aes(slope=0.359, intercept=-19.5)) +
-  xlim(0,200) +
-  ylim(-20,100) +
-  ggpubr::stat_cor(method="pearson") +
-  theme_minimal()
+####################################################################
+####################################################################
 
-## continuous vs continuous  real world example ----
+
+## CONTINUOUS vs CONTINUOUS real world example ----
 ## compare values with scatter plots
 ## assess association with regression lines
 ## statistical tests from the R-squared family (or the linear model of regression)
 
 ## simple correlations without plotting
-## attach to access the column names
-attach(gapminder)
+## use $ to extract columns as vectors
+gap <- gapminder
 ## this give the the R value, or slope of the line
-cor(x=gdpPercap, y=lifeExp)
+cor(x=gapminder$gdpPercap, y=gapminder$lifeExp)
 
 ## you can choose a method depending on the nature of the data
-cor(x=gdpPercap, y=lifeExp, method = "kendall")
+cor(x=gapminder$gdpPercap, y=gapminder$lifeExp, method = "kendall")
 
 ## to get other statistics, you can use cor.test
-cor.test(gdpPercap,lifeExp, method = "pearson")
-
-## if you save the result as an object...
-res <- cor.test(gdpPercap,lifeExp, method = "pearson")
+cor.test(gapminder$gdpPercap,gapminder$lifeExp, method = "pearson")
 
 ## you can produce a nice table using the broom::tidy function
+cor.test(gapminder$gdpPercap,gapminder$lifeExp, method = "pearson") %>% 
 broom::tidy(res)
-
-## detach after finishing
-detach(gapminder)
 
 ## Plotting the two continuous variables
 gapminder %>%
   ggplot(aes(x = gdpPercap, y = lifeExp)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  ggpubr::stat_cor(method="pearson") +
+  ggpubr::stat_cor()+ # use default correlation setting
 theme_minimal()
 
 ## Does the line look like a good fit??
@@ -572,7 +559,7 @@ gapminder %>%
   ggplot(aes(x = log(gdpPercap), y = lifeExp)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  ggpubr::stat_cor(method="pearson") +
+  ggpubr::stat_cor() +
   theme_minimal()
 ## much nicer regression line and bigger R value! (0.81 vs 0.58)
 
@@ -603,10 +590,182 @@ gdp_life_model02 <- lm(lifeExp ~ log_gdp, data = gapminder_log)
 summary(gdp_life_model02)
 get_regression_summaries(gdp_life_model02)
 get_regression_table(gdp_life_model02)
+get_regression_points(gdp_life_model02)
+
+####################################################################
+####################################################################
 
 
-regression_points <- get_regression_points(gdp_life_model02)
-regression_points
+### PACKAGE SUMMARY moderndive ----
+
+## Use moderndive functions to see the results of linear regression models
+
+## First run a linear regression model
+# continuous ~ categorical 
+cat_model <- lm(n_africa ~ birthday, data = df)
+# continuous ~ multi categorical 
+multi_cat_model <- lm(gdpPercap ~ continent, data = gapminder2007)
+# categorical ~ categorical
+cat_cat_model <- lm(call ~ race, resume)
+# continuous ~ continuous
+cont_model <- lm(formula = n_africa ~ height, data = df)
+# continuous ~ (log-transformed) continuou
+gdp_log_model <- lm(lifeExp ~ log_gdp, data = gapminder_log)
 
 
+## Get the summaries for the model
+get_regression_summaries(cat_model)
+get_regression_summaries(multi_cat_model)
+get_regression_summaries(cat_cat_model)
+get_regression_summaries(cont_model)
+get_regression_summaries(gdp_log_model)
 
+## HOW BIG IS THE CORRELATION? (closer to 1 = greater correlation)
+## r_squared = correlation coefficient
+## adj_r_squared = adjusted r squared, adjusted for multiple variables
+
+## HOW GOOD IS THE MODEL? these 3 show the answer (lower is better)
+## mse = mean squared error
+## rmse = root mean squared error - used to show average difference in residuals
+## sigma = standard error of the residuals = rmse / df
+
+## WHAT ARE THE STATS?
+## statistic = F-statistic
+## p_value = probability (is it significant? e.g. < 0.05)
+## df = degrees of freedom
+## nobs = number of observations
+
+get_regression_table(cat_model)
+get_regression_table(mulit_cat_model)
+get_regression_table(cat_cat_model)
+get_regression_table(cont_model)
+get_regression_table(gdp_life_model02)
+## term 1 estimate = intercept = predicted value for the base category 
+##               --> base value for continuous = 0
+##.              --> base value for categorical might be alphabetical unless set!
+
+## term 2 estimate  = predicted change in value for going from base to term 2
+##               --> if continuous  = one unit in continuous variable
+##               --> if categorical = going from base to new category
+## statistic = test statistic used
+## lower_ci = lower confidence interval 
+## upper_ci = upper confidence interval
+
+get_regression_points(cat_model)
+get_regression_table(mulit_cat_model)
+get_regression_points(cat_cat_model)
+get_regression_points(cont_model)
+get_regression_points(gdp_life_model02, ID = "country")
+
+## _hat shows the predicted values for the model (the means)
+## residuals shows the difference between predicted values and real values
+
+### PACKAGE SUMMARY infer ----
+
+## use infer to apply statistical tests on dataframes
+
+## t test
+df %>% 
+  infer::t_test(formula = n_africa ~ birthday)
+
+## chi_squared test
+resume %>% 
+  mutate(call = factor(call)) %>% # change call to a factor (categorical) variable
+  infer::chisq_test(call ~ race)
+
+### PACKAGE SUMMARY broom ----
+
+## use broom for "tidy" output from statistical tests
+
+## on a t test
+t.test(df_even$n_africa,df_odd$n_africa) %>% 
+  broom::tidy()
+
+## on a cor.test
+cor.test(df$height,df$n_africa, method = "pearson") %>%  
+  broom::tidy()
+
+## on a linear model
+lm(n_africa ~ birthday, data = df) %>% 
+  broom::tidy()
+
+## on an Anova
+aov(formula = gdpPercap ~ continent, data = gapminder2007) %>% 
+  broom::tidy()
+
+### PACKAGE summary vcd ----
+## use vcd for chi squared test and mosaic plots
+
+## create a contingency table of two categorical variables
+table(resume$race, resume$call) %>% 
+## get the results of the statistical tests
+  vcd::assocstats()
+
+## visualise with a mosaic plot
+vcd::mosaic(~ race + call,
+       direction = c("v", "h"),
+       data = resume,
+       shade = TRUE)
+
+### PACKAGE summary sjPlot ----
+
+## visualise the effects of variables in your model
+
+## First run a linear regression model
+# continuous ~ categorical 
+cat_model <- lm(n_africa ~ birthday, data = df)
+# continuous ~ multi categorical 
+multi_cat_model <- lm(gdpPercap ~ continent, data = gapminder2007)
+# categorical ~ categorical
+cat_cat_model <- lm(call ~ race, resume)
+# continuous ~ continuous
+cont_model <- lm(formula = n_africa ~ height, data = df)
+# continuous ~ (log-transformed) continuou
+gdp_log_model <- lm(lifeExp ~ log_gdp, data = gapminder_log)
+
+
+# define model, choose prediction type, define which terms to visualise
+plot_model(cat_model, type = "pred", , terms = "birthday") 
+plot_model(multi_cat_model, type = "pred",  terms = "continent") 
+plot_model(cat_cat_model, type = "pred", terms = "race")
+plot_model(cont_model, type = "pred", , terms = "height") 
+plot_model(gdp_log_model, type = "pred", , terms = "log_gdp") 
+
+
+### PACKAGE summary of ggpur ----
+
+## add statistical test results to ggplots
+
+## compare mean values with stat_compare_means()
+
+## comparing two categorical variables
+ggplot(df) +
+  aes(x = "", y = n_africa, fill = birthday) +
+  geom_boxplot() +
+  scale_fill_hue() +
+  labs(x = "Birthday date", y = "Guess for how many countries in Africa", title = "Boxplot of African guesses by odd/even birthday") +
+  theme_minimal() +
+  ggpubr::stat_compare_means(method = "t.test") # specify test with method
+
+ggplot(df) +
+  aes(x = "", y = n_africa, fill = birthday) +
+  geom_boxplot() +
+  scale_fill_hue() +
+  labs(x = "Birthday date", y = "Guess for how many countries in Africa", title = "Boxplot of African guesses by odd/even birthday") +
+  theme_minimal() +
+  ggpubr::stat_compare_means() # default uses non-parametric method (safer)
+
+
+## comparing multiple categorical variables
+ggplot(gapminder2007, aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  labs(x = "Continent", y = "Life expectancy",
+       title = "Life expectancy by continent") +
+  stat_compare_means(method = "anova") # specify test with method
+
+## comparing multiple categorical variables
+ggplot(gapminder2007, aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  labs(x = "Continent", y = "Life expectancy",
+       title = "Life expectancy by continent") +
+  stat_compare_means() # default uses non-parametric method (safer)

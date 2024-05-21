@@ -9,8 +9,11 @@ library(htmltools) # to view text in html window
 # Raw text data
 raw_text <- read_lines("data/messy_scrape.txt")
 
+## 1 EXAMINE the raw_text----
 
+print(raw_text)
 html_print(raw_text)
+
 
 ## This is a bit of a mess, but can you answer these questions?
 
@@ -23,10 +26,7 @@ html_print(raw_text)
 #' Are all the faculty full Professors?
 #' Between which "anchors" are fields of expertise listed?
 
-## 1 EXAMINE the raw_text
 
-print(raw_text)
-html_print(raw_text)
 
 ## Here are some regex you can use in the following code
 

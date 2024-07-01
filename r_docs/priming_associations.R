@@ -23,7 +23,7 @@ write_csv(priming,"data/priming.csv")
 # check the data
 glimpse(df)
 
-## Copy and paste the code from the variable_associations file
+## Copy and paste the code from the exploring_associations file
 ## Use find and replace to adjust the code accordingly
 
 ## continuous vs categorical:----
@@ -36,6 +36,8 @@ glimpse(df)
 ## compare joint frequencies in contingencies tables
 ## statistical test from the Chi-squared family
 ## plot joint frequencies with bar plots or mosaic plots
+
+
 
 
 ## continuous vs continuous ----

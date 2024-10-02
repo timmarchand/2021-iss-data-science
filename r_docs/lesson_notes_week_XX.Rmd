@@ -1,0 +1,82 @@
+---
+title: "CLIL Data Science Lesson - Week XX"
+author: "Your name"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+<details>
+
+<summary>Click for Details</summary> Every week, we will be working with both R script files (extension = `.R`) and R Markdown files (extension = `.Rmd`).
+
+Most of these files will be downloaded into one of these folders:
+
+- r_docs
+- prob_sets
+- units
+
+This R Markdown file is where you organise your learning for this course. To use it properly, open this template file, change the XX in the title (line 2) to the week number, and also change the XX in the file name when you click **File** + **Save As...**
+
+In this document, you will then insert code chunks:
+
+> (To add chunks of code either type **ctrl** + **alt** + **i** on Windows, or **⌘** + **⌥** + **i** on macOS, or use the "Insert Chunk" menu.)
+
+...and copy and paste code from the other sources into these code chunks.
+
+Between the code chunks, there is space to write text. It is your opportunity to write  your own notes to help you understand the code and details about data analysis. The more you write, the more useful each week's file becomes for future understanding (and the more credit you'll get!).
+
+Finally, after you finish working through the content, I want to hear about what you learned and what questions you still have. 
+
+You should answer these two-three questions each time at the bottom of the file:
+
+-   1a. What was the most interesting thing you learned about data?
+
+-   1b. What was the most interesting thing you learned about R?
+
+-   2\. What was the least clear thing from the class this week? What are you still wondering about?
+
+
+To encourage engagement with the course content, you'll need to upload your notes to the **ouR Reflections** on Moodle ***by noon*** of the day of the next class.
+
+These notes will go towards your final grade using a check system:
+
+-   ✔+: (*1.5 points (150%)*) Response shows phenomenal thought and engagement with the course content. I will not assign these often.
+-   ✔: (*1 point (100%)*) Response is thoughtful, well-written, and shows engagement with the course content. This is the expected level of performance.
+-   ✔−: (*).5 points (50%)*) Response is hastily composed, too short, and/or only barely engages with the course content. This grade signals that you need to improve next time. I will hopefully not assign these often.
+
+There will also be up to 3 bonus points for completing all the reflections over the semester.
+
+Notice that is essentially a pass/fail or completion-based system. I'm not grading your writing ability, I'm not counting the exact number of words you're writing, I'm just looking for thoughtful engagement, that's all.
+
+</details>
+
+
+# Title here
+
+
+### Section 1
+
+
+
+### Section 2
+
+
+
+### Reflections
+
+-   1a. What was the most interesting thing you learned about data?
+
+
+
+-   1b. What was the most interesting thing you learned about R?
+
+
+
+-   2\. What was the least clear thing from the class this week? What are you still wondering about?
+
+

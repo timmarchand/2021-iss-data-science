@@ -1,0 +1,18 @@
+1Social Science Seminar ProfessorISHIKAWA, Jota Fields of Specialization Trade Policy,Multinational Firms,Trade and Environment
+2Social Science Seminar ProfessorITO, Tadashi Fields of Specialization International trade,Foreign direct investment,Input-Output analysis
+3Social Science Seminar ProfessorINUI, Tomohiko Fields of Specialization Productivity Analysis,Economic Development,International Trade and Investment
+4English ProfessorIRIE, Kay Fields of Specialization Applied Linguistics,TESOL,Language Learning Psychology,Research Methodology
+5Social Science Seminar ProfessorUSUI, Tetsuya Fields of Specialization International Marketing Strategy,Internationalization of Business Models,Consumer Affinity
+6English ProfessorO'NEILL, Ted Fields of Specialization English Language Teaching,Linguistic Landscapes,Educational Technology
+7Social Science Seminar ProfessorKASHIWAGI, Masanori Fields of Specialization Macroeconomics,International Macroeconomics
+8Social Science Seminar ProfessorGARCIA, Clemence Fields of Specialization Intangible Assets,IFRS,International Tax law
+9Social Science Seminar Associate ProfessorKIM, Soyeon Fields of Specialization Organizational Behavior,International Human Resource Management,Cross-Cultural Comparative Management
+10Social Science Seminar ProfessorKUBO, Koji Fields of Specialization Area studies (Myanmar),Development economics,Southeast Asian economy and society
+11Social Science Seminar ProfessorSHIBATA, Tomoatsu Fields of Specialization Management strategy,technology management,innovation management
+12Social Science Seminar Associate ProfessorTAMAKI, Emi Fields of Specialization Sociology,Social Demography,International Migration,Family and Health
+13Social Science Seminar ProfessorZHAO, Meng Fields of Specialization Health Economics,Chinese Economy,Applied Econometrics
+14Study Abroad English ProfessorNOZAKI, Yoshiko Fields of Specialization Historical Sociology,Social Research Methods,Japan Studies,US Studies,Gender,Higher Education
+15Social Science Seminar Associate ProfessorHOSHI, Akio Fields of Specialization Corporate Law,Securities Regulation,International Business Law,Law and Economics,Law and Finance
+16Social Science Seminar ProfessorMAKITA, Rie Fields of Specialization Development Geography,Political Ecology,Sustainable Livelihoods,Rural Transformation
+17English ProfessorMACGREGOR, Laura Fields of Specialization English Education,Film Studies,Cross-cultural Communication,Advertising Studies
+18English ProfessorMARCHAND, Tim Fields of Specialization Corpus Linguistics,Language Education,e-Learning,Task-based Language Teaching

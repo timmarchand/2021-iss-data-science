@@ -401,7 +401,7 @@ If you ever get the following error:
 It means the Google sheet hasn't been shared properly yet. You will need to have `Shared to anybody with a link` first:
 
 ```{r echo = FALSE, label, out.width = "100%"}
-knitr::include_graphics("../images/how-to-share.pdf") 
+knitr::include_graphics("../figures/how-to-share.pdf") 
 ```
 
 Let's look at an example that will come in useful later.

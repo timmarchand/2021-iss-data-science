@@ -1,0 +1,782 @@
+---
+title: "Importing Text Data in R"
+author: "Tim Marchand"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: true 
+    theme: cerulean
+    code_folding: hide
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+## Introduction
+
+This document introduces various ways to import text data into R.
+We will cover:
+
+1.  Reading individual text files.
+
+2.  Reading multiple text files from a folder.
+
+3.  Importing Google Sheets published on the web.
+
+4.  Scraping text from a webpage.
+
+In each case, we will discuss how we can convert the text data to *tidy* formats.
+
+------------------------------------------------------------------------
+
+## Setup
+
+We will use the following packages in this lesson:
+
+```{r}
+# Install the required packages (if not already installed)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, # especially for the readr package
+               readtext, # for multiple texts and multiple formats
+               rvest) # for webscraping
+```
+
+------------------------------------------------------------------------
+
+## 1. Reading Individual Text Files
+
+We can read an individual `.txt` file in two ways: - `readr::read_file()`: Reads the entire file as a single string.
+- `readr::read_lines()`: Reads the file line by line.
+
+```{r}
+
+# Example: Reading a text file
+file_path <- "../data/iss_scrape.txt"  # Replace with your file path  - you may need to remove the ../
+
+# Read the entire file
+text_data <- read_file(file_path)
+
+#check
+head(text_data)
+
+length(text_data)
+str_length(text_data)
+```
+
+Our `iss_scrape.txt` file has been read as a vector of length 1, with a total of 2605 characters.
+As a result, even when calling the `head()` function, it shows the entire text in the console.
+
+To turn this into more useful data, we'll need to do some tidying and manipulating with `stringr` functions.
+
+Let's try the `read_lines` function next.
+
+```{r}
+# Read the file line by line
+line_data <- read_lines(file_path)
+# check
+head(line_data)
+
+length(line_data)
+str_length(line_data)
+```
+
+This time, the `read_lines` function has separated the text data into a vector of length 18.
+It has separated the text each time it finds a newline break (`\n` or `\r`).
+This is useful when the line breaks carry a significant meaning - as in this case where they separate the details of each ISS faculty member.
+
+Looking at the `head()` call though, shows us that we still have some tidying up to do.
+
+Now let's see what the `readtext` function does.
+
+```{r}
+readtext_data <- readtext(file_path)
+readtext_data
+```
+
+The `readtext_data` has read our text file into a dataframe, with a `doc_id` column as a file name, and a `text` column for the actually text.
+This is useful when reading in multiple files, and you want to store them in a tidy way of one text per row.
+
+Note that the text data is still counted as one element, similar to the `read_file` function.
+
+```{r}
+length(readtext_data$text)
+str_length(readtext_data$text)
+```
+
+The `"\"` that you see at the start of the text cell is the `base` R way of showing a long string of text data, and it's easier enough to convert to `tibble` format with the `as_tibble()` function.
+
+```{r}
+readtext_data %>% 
+  as_tibble()
+```
+
+### Tidying up the line_data
+
+Now let's start putting the data into a tidy format.
+We will work first with the `line_data` as that already has meaningful breaks.
+For our table, we want to extract each professor's:
+
+-   surname
+-   forename
+-   position
+-   specialty
+-   fields of research
+
+Let's have a look at a couple of lines to work out some extraction patterns.
+
+```{r}
+line_data[14:15]
+```
+
+These are the patterns that seem apparent at first blush:
+
+-   surname = `FULL CAPS` after `Professor`
+-   forename = between `,` and `Fields`
+-   position = either `Professor` or `Associate Professor`
+-   specialty = either `English` or `Social Science`
+-   fields of research = everything after `Specialization`
+
+Let's try the first one, using the regex `"(?<=Professor)[A-Z]+"`, which looks for `Professor` and then captures all the repeated FULL CAPS afterwards with `[A-Z]+`.
+
+```{r}
+str_extract(line_data, "(?<=Professor)[A-Z]+")
+```
+
+Not bad, but element 6 seems wrong!
+
+```{r}
+line_data[6]
+```
+
+Ah, we need to add an apostrophe to the grouping of ALL CAPS.
+
+```{r}
+str_extract(line_data, "(?<=Professor)[A-Z']+")
+```
+
+Now we have 18 correct matches.
+Let's try the rest, and make sure we have 18 correct results for each.
+
+**forename** = any word character `\\w+` between a comma and space `(?<=,\\s)` and a space and Fields `(?=\\sFields)`
+
+```{r}
+str_extract(line_data, "(?<=,\\s)\\w+(?=\\sFields)")
+```
+
+**position** = either `Professor|Associate Professor`
+
+```{r}
+str_extract(line_data, "Professor|Associate Professor")
+```
+
+**speciality** = either `Social Science|English`
+
+```{r}
+str_extract(line_data, "Social Science|English")
+```
+
+**field** = everything until the end `.+$` after `(?<=Specialization )`
+
+```{r}
+str_extract(line_data, "(?<=Specialization ).+$")
+```
+
+It looks like we have 18 results for each extraction, so let's put them all into a tibble.
+
+```{r}
+ISS_prof_df <- 
+  tibble(surname = str_extract(line_data, "(?<=Professor)[A-Z']+"),
+         forename = str_extract(line_data, "(?<=,\\s)\\w+(?=\\sFields)"),
+         position = str_extract(line_data, "Professor|Associate Professor"),
+         specialty = str_extract(line_data, "Social Science|English"),
+         fields = str_extract(line_data, "(?<=Specialization ).+$")
+)
+
+ISS_prof_df
+```
+
+> Is this data now perfectly tidy?
+
+It depends on your needs, but the `field` column contains multiple values that could be separated.
+This would mean creating a longer table, with a new row for each field of research.
+
+The easiest way is using the `separate_longer_delim()` function, specifying the `cols` argument as `field`, and the `delim`inator as `,` (deliminator means something that marks the boundary between two elements).
+
+```{r}
+ISS_prof_df %>% 
+  separate_longer_delim(cols = fields, delim = ",")
+```
+
+### Tidying up the clumped text_data
+
+The easiest thing to do is find a deliminator to separate the single string into meaningful elements.
+Fortunately, we have the linebreak markers `\n`, which is how `read_lines()` did it for us.
+If we had to work on the `text_data` ourselves, we could use one of the `str_split` functions from `stringr`.
+
+> What's the difference in these outputs?
+
+```{r}
+str_split(text_data, pattern = "\n" )
+```
+
+```{r}
+str_split_1(text_data, pattern = "\n" )
+```
+
+By default, `str_split()` always returns a list object.
+The input was a character vector of length 1, so the output is a list with just one element, but in that one element we have 18 character strings.
+
+To deal with this, we can `unlist` the entire list into one vector, or `pluck` the first (and only) element of the list, which is the same as selecting `[[]]` the vector by reference from the list:
+
+```{r}
+str_split(text_data, pattern = "\n" ) %>% unlist()
+
+str_split(text_data, pattern = "\n" ) %>% pluck(1)
+
+str_split(text_data, pattern = "\n" ) %>% .[[1]]
+```
+
+But in this case, `str_split_1()` is easiest as it automatically returns a simplified version, just one character vector with 18 strings.
+This should be the same as our `line_data`.
+
+```{r}
+all.equal(str_split_1(text_data, "\n"),line_data)
+```
+
+Let's imagine we have text data **without** the convenience of line breaks.
+Is there anything else we can split it on?
+
+```{r}
+text_data_no_linebreaks <- str_remove_all(text_data, "\n")
+text_data_no_linebreaks
+```
+
+It looks like we might be able to split the data on numbers.
+Let's see if we have the expected 18 numbers.
+We'll count with the regex `"\\d+"` to ensure we count numbers in the tens together.
+
+```{r}
+str_count(text_data_no_linebreaks, "\\d+")
+```
+
+Okay, let's try splitting on `"\\d+"`:
+
+```{r}
+str_split_1(text_data_no_linebreaks, pattern = "\\d+")
+```
+
+> Why do we get 19 elements this time?
+
+The `"\\d+"` deliminator marks the boundaries between elements, so if we have `n` boundaries, we are always going to get `n+1` elements.
+In this case, the first element in the vector is an empty string `""`.
+
+We can get rid of the empty strings by piping into either `str_subset(".")`, which subsets only those elements containing *something*, or `.[.!=""]` which can be read as select ([]) from current data (.) the current data (.) that does not equal (!=) an empty string ("").
+
+```{r}
+str_split_1(text_data_no_linebreaks,"\\d+") %>% 
+  str_subset(".")
+```
+
+```{r}
+str_split_1(text_data_no_linebreaks,"\\d+") %>% 
+  .[.!=""]
+```
+
+### Dealing with no deliminators
+
+Finally, let's see what we can do with text data without numbers as deliminators.
+
+```{r}
+text_data_no_numbers <- str_remove_all(text_data_no_linebreaks, "\\d+")
+
+text_data_no_numbers
+```
+
+Rather than trying to split the text into parts for each faculty member, we can simply extract all elements from the text directly.
+
+Let's first try using the same regex as before, but instead use the `str_extract_all()` function.
+Previously, the `str_extract()` function just took the first match for each regex, but that was fine as we only expected one match per line of data.
+
+Now we'll need mulitple matches, so we use `str_extract_all()`, which will result in a list of length 1 (same length as the input vector), but within the first element of the list we should get vectors of length 18.
+
+```{r}
+str_extract_all(text_data_no_numbers, "(?<=Professor)[A-Z']+")
+  
+str_extract_all(text_data_no_numbers, "(?<=,\\s)\\w+(?=\\sFields)")
+       
+str_extract_all(text_data_no_numbers, "Professor|Associate Professor")
+         
+str_extract_all(text_data_no_numbers, "Social Science|English")
+         
+str_extract_all(text_data_no_numbers, "(?<=Specialization ).+$")
+```
+
+Most of the regex works just fine as is, but were all the vectors of length 18?
+
+> Which code did not produce the result as expected?
+> Why?
+
+We have problems for our specialty and field regex.
+In case of ***specialty***, we have too many elements returned, while for ***field*** we don't have not enough.
+
+```{r}
+
+str_extract_all(text_data_no_numbers, "Social Science|English") %>% unlist %>% length
+         
+str_extract_all(text_data_no_numbers, "(?<=Specialization ).+$") %>% unlist %>% length
+```
+
+The problem in the case of ***specialty*** is that we extracted English too many times, as two professors have included the word "English" in their fields of research.
+To deal with that, we can use the fact that `English` is always followed by `Professor` when it is in the specialty position.
+So let's use a **lookahead regex** for that `(?= Professor)`:
+
+```{r}
+str_extract_all(text_data_no_numbers, "Social Science|English(?= Professor)") %>% unlist %>% length
+```
+
+As for the ***field*** value, our original regex captured all the text from `Specialization` until the end of the element.
+That was fine for the line data when we had 18 string ends, but there is only one string now!
+
+So we need to find an additional deliminator that marks the boundary.
+Close inspection of the data shows that there is no space between the last word of the research fields, and the first word of the next entry, which is either Social, English or Study.
+We can use this information in the following regex:
+
+```{r}
+str_extract_all(text_data_no_numbers, 
+                "(?<=Specialization ).+?[a-z]($|(?=(English|Social|Study)))") %>% unlist
+```
+
+The **look behind** regex is the same `(?<=Specialization )`, followed by a non-greedy match of multiple characters `.+?` which ends with a lower caps letter `[a-z]`, followed by either the end of the string or a **lookahead** regex `($|(?=(English|Social|Study)))`.
+
+This seems to work fine, but also demonstrates why it is often easier to work with line data!
+
+Now putting all the parts together again, we can create a tibble as before:
+
+```{r}
+ISS_prof_tib <- tibble(surname = str_extract_all(text_data_no_numbers, "(?<=Professor)[A-Z']+"),
+       forename = str_extract_all(text_data_no_numbers, "(?<=,\\s)\\w+(?=\\sFields)"),
+       position = str_extract_all(text_data_no_numbers, "Professor|Associate Professor"),
+       specialty = str_extract_all(text_data_no_numbers, "Social Science|English(?= Professor)"),
+       field = str_extract_all(text_data_no_numbers, "(?<=Specialization ).+?[a-z]($|(?=(English|Social|Study)))")) 
+
+ISS_prof_tib 
+```
+
+The resulting tibble looks different to our `ISS_prof_df` as all the columns are what are called **nested list** columns.
+We can `unnest` them as follows:
+
+```{r}
+ISS_prof_tib %>% 
+  unnest(cols = surname:field)
+```
+
+Note that here we could `unnest` across all the columns at the same time because they all contained character vectors of the same length, as we had checked just now.
+That might not always be the case.
+
+Once we have created the tibble to our liking, we could save the data as a csv file in our data folder.
+
+```{r}
+ISS_prof_tib %>% 
+  unnest(cols = surname:field) %>% 
+  write_csv("../data/ISS_prof_tib.csv") #  you may need to remove the ../
+```
+
+## 2. Importing Google Sheets Published on the Web
+
+If a Google Sheet is published on the web, we can import it using `readr::read_csv()`.
+You need to use the URL of the Google sheet in the following format:
+
+```{r}
+'https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={tab_id}'
+```
+
+Replace the `{sheet_id}` and `{tab_id}` with id codes from your Google Sheets URL. 
+
+If you ever get the following error:
+
+> Error in open.connection(3L, "rb") : HTTP error 401.
+
+It means the Google sheet hasn't been shared properly yet. You will need to have `Shared to anybody with a link` first:
+
+```{r echo = FALSE, label, out.width = "100%"}
+knitr::include_graphics("../images/how-to-share.pdf") 
+```
+
+Let's look at an example that will come in useful later.
+You can see an example Google sheet [here.](https://docs.google.com/spreadsheets/d/1XLtEneRtMSaZU5OzD6E1MsjV9MfSjeu7foaaPWIJlA4/edit?gid=1498530127#gid=1498530127)
+
+The `{sheet_id}` in the URL is the long string between the `/d/` and `/edit?`, while the `{tab_id}` is the number following `gid=`.
+
+
+```{r}
+# Example: Importing a Google Sheet
+sheet_url <- 'https://docs.google.com/spreadsheets/d/1XLtEneRtMSaZU5OzD6E1MsjV9MfSjeu7foaaPWIJlA4/export?format=csv&gid=1498530127'
+
+# Import the Google Sheet
+sheet_data <- read_csv(sheet_url)
+
+# View the data
+sheet_data
+```
+
+We're going to use this tibble later, so let's give it a suitable name.
+```{r}
+pres_dbts <- sheet_data
+```
+
+
+
+------------------------------------------------------------------------
+
+## 3. Reading Multiple Text Files in a Folder
+
+As we saw when reading in single text files, the `readtext::readtext()` allows you to read in a text file, with one column as the filename (`doc_id`), and another the text itself. This really becomes useful when you have multiple text files in a folder, and you'd like to import them all at once.
+
+Let's create an example folder first, by scraping some text data, creating text files, and putting them into a folder.
+
+We can then see how readtext works in practice.
+
+The following code scrapes some text data based on this [page of a links on a website](https://www.debates.org/voter-education/debate-transcripts/). We won't go into details here how it works, we will come to that in good time.
+
+```{r}
+library(tidyverse)
+library(rvest)
+
+## scraping function
+url_scrape <- function(url ="https://www.debates.org/voter-education/debate-transcripts/",
+                       css = "blockquote p , #content-sm a",
+                       base = "https://www.debates.org"){
+ links <-  read_html({{url}}) %>%
+  html_elements({{css}}) %>%
+  html_attr("href")
+
+ links <- links[!is.na(links)] %>%
+   purrr::map_chr(~ url_absolute(.x, {{base}}))
+
+ return(links)
+}
+
+text <- url_scrape() %>% 
+map(read_html) %>% 
+  map(~html_elements(.x, "p , b")) %>% 
+  map(html_text) %>%  
+  map(~str_subset(.x, "[A-Z]:$", negate = TRUE)) %>%
+  map_chr(~str_flatten(.x, collapse = "\n"))
+
+str(text)
+```
+
+Remember the sheet_data we picked up from Google sheets? That data contains the meta information of these presidential debates. Let's combine them together now.
+
+```{r}
+pres_dbts$text <- text
+pres_dbts
+```
+
+### Reading in multiple text files
+
+Finally, we are going to generate the text files programmatically. We do this by adding a column of filenames to our tibble. It is often useful to have **meta** data in filenames, such as dates or participants, as these can be retrieved at a later date.
+
+
+```{r}
+dbts <- pres_dbts %>% 
+    mutate(filename = str_c(debaters, row_number(),date, sep = "_"), .by = debaters)
+```
+
+To create the texts and put them in a specified folder, we use a member of `tidyr::map` family of functions, `walk2`, which is synonymous with `map2`, except it does things *quietly* without sending anything to the console.
+
+```{r}
+walk2(.x = dbts$text,
+      .y = dbts$filename,
+      function(x,y) write_lines(x,
+                       str_c("../data/debates/",y,".txt"))) # - you may need to remove the ../
+```
+
+If you get the following error:
+
+> Error in `map2()`:
+ℹ In index: 1.
+Caused by error:
+! Cannot open file for writing:
+* 'data/debates/Biden-Trump_1_2020-09-29.txt'
+Run `rlang::last_trace()` to see where the error occurred.
+
+It might be because you have not created a `debates` folder in your `data` folder yet.
+
+
+Now we have created our folder of texts (which is can be called a `corpus`), let's see how the `readtext()` function works, step by step.
+
+
+```{r}
+library(readtext)
+library(tidyverse)
+# Example: Reading multiple text files
+folder_path <- "../data/debates"  # Replace with your folder path - you may need to remove the ../
+
+# Import all text files from the folder
+files_data <- readtext(str_c(folder_path, "/*.txt"))
+
+# View the combined data
+files_data
+```
+
+`readtext` combines the content of all files into a single data frame, with columns for file names and text. Remember that if you prefer `tibble` format to pipe the function `as_tibble` at the end.
+
+In the next chunk, we add the argument `docvarsfrom = "filenames"`, what do you think is going on here?
+
+```{r}
+readtext(str_c("../data/debates", "/*.txt"),
+         docvarsfrom = "filenames")
+```
+
+The `readtext()` function has converted the filename to **meta** data, automatically assuming that the `_` is the deliminator for certain variables. In the next chunk, we specify what those variables are, and then apply some tidyverse functions to tidy up the data:
+
+```{r}
+readtext(str_c("../data/debates", "/*.txt"),
+         docvarsfrom = "filenames" ,
+         docvarnames = c("debaters", "debate_id", "date")) %>% 
+    mutate(date = ymd(date), text = str_squish(text)) %>% 
+    arrange(date) %>% 
+  select(debaters, debate_id, date, text) %>% 
+    as_tibble
+```
+
+That's the beauty of the `readtext()` function, it quickly imported a lot of separate text files into a tidy format, with useful variable names as well.
+
+
+------------------------------------------------------------------------
+
+## 4. Scraping Text from a Web Page
+
+Sometimes you can get lucky, and find text files uploaded as simple urls, for example [here](https://mk.bcgsc.ca/debates2016/deb/clinton-trump-04/transcript.txt), which is another source for all the Clinton-Trump debates in 2016. The giveaway is that the url has `.txt` at the end.
+
+In this case, we can just use the `read_lines()` function directly as before.
+
+```{r}
+CT <- read_lines("https://mk.bcgsc.ca/debates2016/deb/clinton-trump-04/transcript.txt")
+
+head(CT)
+
+```
+
+>It appears that this document has several empty lines, how can we remove them?
+
+First, let's see how many there are:
+```{r}
+# how many empty lines?
+CT[CT == ""] %>% length
+```
+
+We can use either of the following to remove them:
+```{r}
+# remove the lines and check
+CT[CT != ""] %>% head
+# remove empty lines and assign to CT
+CT <- str_subset(CT, ".")
+```
+
+Let's carry on tidying up this data and putting it into a useful tibble. First, we will identify the speakers. Let's have a look at some more lines from `CT`.
+
+```{r}
+# find the speakers with regex
+head(CT, 20)
+```
+
+It seems that the speaker's turn is indicated by the pattern of `ALL CAPS` followed by `:` at the start of some - but not all - lines. 
+
+> What regex could we use the extract the speaker's names?
+
+```{r}
+str_extract(CT, "[A-Z]+:")
+```
+
+This regex should be somewhat familiar from our earlier look at the ISS Prof data. Note how we have several `NA` values in the extraction, but we will be able to deal with that later.
+
+Let's start creating a tibble for this data.
+```{r}
+tibble(speaker = str_extract(CT, "[A-Z]+:"),
+       text = CT)
+```
+
+You'll notice that the NAs all follow the same speaker until the next person speaks. This is a great opportunity to use the `fill` function, that fills those NA values with the previous one until it meets a non-NA row.
+
+```{r}
+tibble(speaker = str_extract(CT, "[A-Z]+:"),
+       text = CT) %>% 
+  fill(speaker) 
+```
+
+Further tidying up can be done removing the speaker from the text column, and removing the colon from each speaker. Let's call the tibble `CT_dbt`.
+
+
+```{r}
+CT_dbt <- tibble(speaker = str_extract(CT, "[A-Z]+:"),
+       text = CT) %>% 
+  fill(speaker) %>% 
+  mutate(text = str_remove(text, str_c(speaker, " ")),
+         speaker = str_extract(speaker, "[A-Z]+(?=:)"))
+
+CT_dbt
+```
+
+This text file actually contains all three debates between CLinton and Trump in 2016. Of course the presidential candidates were the same, but the moderators were different each time.
+
+We can find out where each speaker first shows up by adding a rowid column, and finidng the minimum value for that column `.by` speaker.
+
+```{r}
+CT_dbt %>% 
+  rowid_to_column() %>% 
+  summarise(first = min(rowid), .by = speaker)
+```
+
+It seems that HOLT was the first moderator, and...
+
+```{r}
+CT_dbt %>% 
+  slice(512:520)
+```
+
+... a combination of RADDATZ, COOPER and QUESTION form the audience were in the second debate, and..
+
+```{r}
+CT_dbt %>% 
+  slice(955:965)
+```
+
+WALLACE was the last moderator. We can create a `debate` variable then with some conditional mutates. We can also code a column for `turn` with the function `row_number()`, mutated on a grouping on `debate`. 
+
+```{r}
+CT_dbts <- CT_dbt %>% 
+    mutate(debate = case_when(speaker == "HOLT" ~ 1L,
+                            speaker == "RADDATZ" ~ 2L,
+                            speaker == "WALLACE" ~ 3L,
+                            TRUE ~ NA_integer_), .before = speaker) %>%
+  fill(debate) %>% 
+  mutate(turn = row_number(), .by = debate, .after = debate)
+
+CT_dbts
+```
+
+Let's save this data as another csv file in our data folder,
+```{r}
+CT_dbts %>% 
+  write_csv("../data/CT_dbts.csv") # Check the folder path  - you may need to remove the ../
+```
+
+### Scraping text with rvest
+
+To scrape content from web pages, we use `rvest`.
+You can extract elements like paragraphs, headings, or links using CSS selectors, as we briefly saw earlier.
+
+CSS selectors are like "addresses" that help you pinpoint specific parts of a webpage you want to scrape. They allow you to select elements based on their tags, classes, IDs, and even their position in the HTML structure. 
+
+In `rvest`, you can pass these CSS selectors to functions like `html_nodes()` or `html_element()` to extract the desired content. This makes web scraping more precise and efficient!
+
+You can find what these CSS addresses are using the [Selector Gadget]("https://chromewebstore.google.com/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=JA") extension for Chrome browsers.
+
+Here is how webscraping can work on a simple [website](https://en.wikipedia.org/wiki/Web_scraping). 
+
+> What's the css address for paragraphs in this website?
+
+Here's a simple scrape of paragraphs from that page.
+
+```{r}
+library(rvest)
+
+# Use a real webpage URL
+url <- "https://en.wikipedia.org/wiki/Web_scraping"
+
+# Read the HTML content
+webpage <- read_html(url)
+
+# Extract specific elements (e.g., paragraphs)
+text_data <- webpage %>% html_nodes("p") %>% html_text()
+
+# View the extracted text
+head(text_data)
+
+```
+
+Finally, let's try and get the data from the [Harris-Trump debate](https://abcnews.go.com/Politics/harris-trump-presidential-debate-transcript/story?id=113560542).
+
+> What CSS selector should we use?
+
+```{r}
+url <- "https://abcnews.go.com/Politics/harris-trump-presidential-debate-transcript/story?id=113560542"
+css <- ".aGjvy"
+
+HT <- read_html(url) %>% 
+  html_nodes(css) %>% 
+  html_text()
+
+head(HT)
+```
+
+This data requires less tidying up than the others. First, we don't need the first four lines.
+
+```{r}
+## Remove the first few lines
+HT <- HT[4:length(HT)]
+
+head(HT)
+```
+
+We should also check for empty strings again:
+```{r}
+## check for empty lines
+HT[HT == ""] %>% length
+```
+
+Finally, let's make a tibble, and save it as a `csv` file.
+```{r}
+# Create tibble
+
+HT_dbt <- tibble(speaker = str_extract(HT, "[A-Z ]+:"),
+       text = HT) %>% 
+  fill(speaker) %>% 
+  mutate(text = str_remove(text, str_c(speaker, " ")),
+         speaker = str_extract(speaker, "[A-Z]+(?=:)"))
+
+HT_dbt 
+
+HT_dbt %>% 
+  write_csv("../data/HT_dbt.csv") # Check the folder path  - you may need to remove the ../
+```
+
+------------------------------------------------------------------------
+
+## Practical Activity
+
+### Task 1: Read a Text File
+
+-   Import a `.txt` file using both `read_file()` and `read_lines()`.
+-   Compare the outputs.
+
+### Task 2: Import a Google Sheet
+
+-   Use a published Google Sheet URL to import a dataset into R.
+
+### Task 3: Import Multiple Files
+
+-   Place several `.txt` files in a folder and import them all using `readtext::readtext()`.
+
+### Task 4: Scrape a Web Page
+
+-   Use `rvest` to scrape text data from [this page](https://www.presidency.ucsb.edu/documents/presidential-debate-atlanta-georgia) of the 2024 Biden_Trump presidential debate.
+
+Find the correct css to use, and tidy the data up afterwards.
+
+Save it as  `BT_dbt.csv` in your data folder.
+
+------------------------------------------------------------------------
+
+## Summary
+
+-   `read_file()` and `read_lines()` handle individual text files.
+-   `read_csv()` reads published Google Sheets directly.
+-   `readtext()` is ideal for batch importing multiple text files.
+-   `rvest` enables web scraping for structured or unstructured text.
+
+Feel free to experiment with these functions to explore their full potential!

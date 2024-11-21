@@ -97,7 +97,3 @@ save_imdb_tv <- function(tt,season = 1) {
   # Write the scraped data to a CSV file in the "reviews" directory
   write_csv(data, glue("imdb_tv_episodes/{show_name}_{tt}.csv"))
 }
-
-
-scrape_imdb_tv("tt0078703", "all")
-save_imdb_tv("tt0108778", 1)

@@ -64,14 +64,14 @@ NT [[1]] %>%
   gt::gt()
 
 
-## sentiment analysis ----
+## sentiment analysis with syuzhet ----
 
 ## subset for the Harris-Trunp debate in 2024
 HT <- dbts %>% 
   filter(str_detect(debate_id, "HT"))
 
 
-## sentiment scores with syuhet
+## sentiment scores with syuzhet
 
 p <- HT %>% 
   mutate(sentiment = get_sentiment(text)) %>% 

@@ -78,7 +78,7 @@ wc1 <- HT %>%
   count(speaker, word, sort = TRUE) %>%
   filter(speaker == "TRUMP") %>% 
 select(word, freq = n) %>% 
-  wordcloud2()
+  wordcloud2(size = 0.5) # Change the size of the font to fit most freq word
 
 wc1
 
@@ -88,7 +88,8 @@ wc2 <- HT %>%
   count(speaker, word, sort = TRUE) %>%
   filter(speaker == "HARRIS") %>% 
 select(word, freq = n) %>% 
-  wordcloud2()
+  wordcloud2(size = 0.5) # Change the size of the font to fit most freq word
+
 
 wc2
 

@@ -7,7 +7,7 @@ library(htmltools) # to view text in html window
 
 ## Read in the raw data from a messy webscrape from the ISS website
 # Raw text data
-raw_text <- read_lines("data/messy_scrape.txt")
+raw_text <- read_lines("data/iss_scrape.txt")
 
 ## 1 EXAMINE the raw_text----
 

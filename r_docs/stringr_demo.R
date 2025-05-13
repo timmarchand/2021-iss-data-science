@@ -14,6 +14,8 @@ raw_text <- read_lines("data/iss_scrape.txt")
 print(raw_text)
 html_print(raw_text)
 
+#' If you get an error you don't understand,
+#' what should you do?
 
 ## This is a bit of a mess, but can you answer these questions?
 

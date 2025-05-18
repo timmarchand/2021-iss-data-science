@@ -2,7 +2,7 @@
 
 library(tidyverse)
 
-update_folder <- function(week = 1:14, type = c("r_docs", "PS", "data", "figs", "R", "Rmd"), ...) {
+update_folder <- function(week = 1:14, type = c("r_docs", "PS", "data", "figs", "R", "Rmd", "base"), ...) {
   readr::read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRimSFdlfx8dNYlqvLHEwdipABwqWSaM7Si2iYgV7wKEDnIo2-f3LJiqBWTzaZ-MuU8cY-3zus6-dEH/pub?gid=1828289266&single=true&output=csv", col_types = cols()) %>%
      dplyr::filter(week %in% {{week}}, type %in% {{type}}) %>%
     dplyr::mutate(path = case_when(

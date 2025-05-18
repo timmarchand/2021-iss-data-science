@@ -3,7 +3,8 @@
 ## Note the best way to do this to change your Global Options...
 
 # this code removes everything from your workspace
-rm(list=ls())
+# Uncomment the code to run it - but be careful, and only do so if certain!
+# rm(list=ls())
 
 ## Load the packages
 ## you may need to use install.packages() first

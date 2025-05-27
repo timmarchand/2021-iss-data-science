@@ -1,7 +1,7 @@
 ## Processing random questions data
 
 ## OPTIONAL clear memory
- rm(list=ls(all=TRUE))
+ #rm(list=ls(all=TRUE))
 
 ## load libraries and data ----
 # library(tidyverse)

@@ -2,7 +2,7 @@
 ### Set up ----
 
 ### Clear memory
-rm(list=ls(all=TRUE))
+# rm(list=ls(all=TRUE))
 
 ### load packages
 

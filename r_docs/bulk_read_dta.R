@@ -1,6 +1,6 @@
 # Load necessary packages
 pacman::p_load(tidyverse, # as usual
-               haven # for reading dta files)
+               haven) # for reading dta files
 
 # Set the path to your folder containing .dta files
 folder_path <- "path/to/your/folder"  # <- Replace with your actual folder path

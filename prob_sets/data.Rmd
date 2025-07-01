@@ -1,5 +1,5 @@
 ---
-title: "Project Data Proposal"
+title: "Your ISS Data Project Title"
 author: "WRITE YOUR NAME HERE"
 date: "Last updated on `r Sys.Date()`"
 output:
@@ -153,3 +153,140 @@ glimpse()
 ```{r}
 
 ```
+
+
+# Exploratory data analysis
+
+_Let's do an little exploratory data analysis._
+
+## Inspect for missing values
+
+_Address missing values._
+
+Using the trick in the "Become an R Data Ninja!" file, we get a sense of how many missing values we have in our data. 
+
+```{r}
+colSums(is.na(ma_schools))
+```
+
+Missing values details...
+
+```{r}
+
+```
+
+## Summary statistics
+
+_Compute some quick summary statistics of the outcome variable and comment._
+
+```{r}
+
+```
+
+Summary statistics details...
+
+## Histogram of outcome variable 
+
+_Visualize the distribution of the outcome variable using a histogram and comment._
+
+```{r, fig.cap = "Figure 1. Detialed title", fig.align = "center", fig.width=16/2, fig.height=9/2}
+ggplot() 
+```
+
+These data seem roughly bell-shaped, with no obvious skew. There is an outlier average Math SAT score of around 750 or so. This school is the [MA Academy for Math and Science School](https://www.massacademy.org/).
+
+
+## Scatterplot 
+
+_Visualize the relationship of the outcome variable and the numerical explanatory variable using a scatterplot and comment._
+
+```{r, fig.cap = "Figure 2. Detialed title", fig.align = "center", fig.width=16/2, fig.height=9/2}
+
+ggplot()
+```
+
+Some visualization details...
+
+
+## Boxplot
+
+_Visualize the relationship of the outcome variable and the categorical explanatory variable using a scatterplot and comment._
+
+```{r, fig.cap = "Figure 3. Detialed title", fig.align = "center", fig.width=16/2, fig.height=9/2}
+ggplot()
+```
+
+Some visualization details...
+
+
+## Colored scatterplot
+
+_Visualize the relationship of the outcome variable and both explanatory variables using a colored scatterplot and comment._
+
+```{r, fig.cap = "Figure 4. Detialed title", fig.align = "center", fig.width=16/2, fig.height=9/2}
+ggplot()
+```
+
+Some visualization details
+
+# 3. Multiple linear regression
+
+## 3.1 Methods
+
+The components of our multiple linear regression model are the following:
+
+* Outcome variable $y$ =
+* Numerical explanatory variable $x_1$ = 
+* Categorical explanatory variable $x_2$ = 
+
+
+## 3.2 Model Results
+
+***
+
+Table 2. Regresstion table of...
+ 
+```{r}
+
+```
+
+***
+
+## 3.3 Interpreting the regression table
+
+The regression equation for ... is the following:
+
+$$
+\begin{aligned}\widehat {score} =& b_{0} + b_{prct} \cdot prct + b_{med} \cdot 1_{is\ med}(x_2) + b_{large} \cdot 1_{is\ large}(x_2) \\
+ =& 588.190 - 2.777 \cdot prct - 11.913 \cdot 1_{is\ med}(x_2) - 6.362 \cdot 1_{is\ large}(x_2)
+\end{aligned} 
+$$
+
+* The intercept ($b_0$ = 588.190) represents .... (Table 2).
+* The estimate for the slope  ($b_{prct}$ = -2.777) is the .... Based on this estimate, for every .., there was an associted increase/decrease in ...
+* The estimate for ... ($b_{med}$ = -11.913) and ... ($b_{large}$ = -6.36) are the offsets in intercept relative to the baseline group's　... (Table 2). In other words, on average ...
+
+Thus the three regression lines have equations:
+
+$$
+\begin{aligned}
+\text{Small schools (in red)}: \widehat {score} =& 588.190 - 2.777 \cdot prct\\
+\text{Medium schools (in green)}: \widehat {score} =& 576.277 - 2.777 \cdot prct\\
+\text{Large schools (in blue)}: \widehat {score} =& 581.828 - 2.777 \cdot prct
+\end{aligned} 
+$$
+
+
+***
+
+
+# 4. Discussion 
+
+## 4.1 Conclusions
+
+
+## 4.2 Limitations
+
+
+## 4.3 Further questions
+

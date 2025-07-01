@@ -1,0 +1,13 @@
+# Prompt for asking AI for help (CLAUDE AI recommended)
+
+## Knitting problems
+
+As an expert but gentle R instructor, please advise me why the pasted Rmd file cannot knit prpoerly.
+The error message I get says: (paste error message from console)
+And the full Rmd file is (paste your Rmd)
+
+## General problems
+
+As an expert but gentle R instructor, please advise me why the following code chunk creates an error.
+The error message I get says: (paste error message from console)
+And the code chunk is (paste your code chunk)

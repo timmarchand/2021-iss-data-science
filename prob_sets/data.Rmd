@@ -13,10 +13,11 @@ output:
       collapsed: no
 ---
 
-```{r, message=FALSE}
-# Load all packages here:
+```{r, include=FALSE}
+# Load all packages here, add more as necessary:
 library(tidyverse)
 library(janitor)
+library(moderndive)
 
 # Set seed value of random number generator to get "replicable" random numbers.
 # The choice of seed value of 42 was an arbitrary one on my part.
@@ -166,7 +167,7 @@ _Address missing values._
 Using the trick in the "Become an R Data Ninja!" file, we get a sense of how many missing values we have in our data. 
 
 ```{r}
-colSums(is.na(ma_schools))
+
 ```
 
 Missing values details...

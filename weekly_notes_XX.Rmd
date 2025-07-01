@@ -1,0 +1,37 @@
+---
+title: "CLIL Data Science Lesson - Week XX"
+author: "Your name"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+
+# Notes for Week XX
+
+
+### Section 1
+
+I learned a lot about data
+
+### Section 2
+I learned how to load packages in R
+
+
+### Reflections
+
+-   1a. What was the most interesting thing you learned about data?
+
+Comment here
+
+-   1b. What was the most interesting thing you learned about R?
+
+Comment here
+
+-   2\. What was the least clear thing from the class this week? What are you still wondering about?
+
+Comment here

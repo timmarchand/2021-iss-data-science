@@ -1,0 +1,603 @@
+---
+title: "Toy Guide: From Data Visualization to Interaction Modeling in R"
+author: "Tim Marchand"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 6)
+```
+
+## Learning Objectives
+
+This guide shows you how to:
+
+1.  Create effective data visualizations using ggplot2
+2.  Build and interpret linear models of increasing complexity
+3.  Understand and visualize interaction effects
+4.  Compare models and select the best one
+5.  Interpret interaction plots and model results
+
+------------------------------------------------------------------------
+
+## Part 1: Setting Up and Exploring the Data
+
+### Load Required Libraries
+
+```{r libraries}
+library(tidyverse)
+library(sjPlot)
+library(moderndive)
+library(gridExtra)
+
+# Load the data
+condiments <-  read_csv("https://tinyurl.com/iss-condiments-web")
+
+# Quick look at the data structure
+glimpse(condiments)
+
+condiments %>% 
+  select(enjoyment, food, sauce, temperature) %>% 
+  summary()
+```
+
+Note the `condiments` data set is what is known as "toy" data, data used for pedagogical purposes, rather than real data collected from the wild.
+
+### Convert Variables to Factors
+
+```{r factors}
+# Convert categorical variables to factors for better modeling
+condiments$food <- factor(condiments$food)
+condiments$sauce <- factor(condiments$sauce)
+
+# Check the levels
+levels(condiments$food)
+levels(condiments$sauce)
+
+# Look at sample sizes
+table(condiments$food, condiments$sauce)
+```
+
+When modelling, it is useful to convert string (text) data to factors as it makes the processing faster and more efficient.
+
+------------------------------------------------------------------------
+
+## Part 2: Basic Data Visualization with ggplot2
+
+### 2.1 Univariate Distributions
+
+```{r univariate, fig.height=8}
+# Distribution of enjoyment scores
+p1 <- ggplot(condiments, aes(x = enjoyment)) +
+  geom_histogram(bins = 15, fill = "skyblue", alpha = 0.7) +
+  labs(title = "Distribution of Enjoyment Scores", 
+       x = "Enjoyment", y = "Count") +
+  theme_minimal()
+
+# Distribution by food type
+p2 <- ggplot(condiments, aes(x = enjoyment, fill = food)) +
+  geom_histogram(bins = 15, alpha = 0.7, position = "identity") +
+  labs(title = "Enjoyment Distribution by Food Type", 
+       x = "Enjoyment", y = "Count") +
+  theme_minimal() +
+  facet_wrap(~food)
+
+# Show plots
+grid.arrange(p1, p2, ncol = 1)
+```
+
+### 2.2 Bivariate Relationships
+
+```{r bivariate, fig.height=10}
+# Enjoyment by food type (boxplot)
+p3 <- ggplot(condiments, aes(x = food, y = enjoyment, fill = food)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.5) +
+  labs(title = "Enjoyment by Food Type", 
+       x = "Food Type", y = "Enjoyment") +
+  theme_minimal()
+
+# Enjoyment by sauce type
+p4 <- ggplot(condiments, aes(x = sauce, y = enjoyment, fill = sauce)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.5) +
+  labs(title = "Enjoyment by Sauce Type", 
+       x = "Sauce Type", y = "Enjoyment") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Temperature vs enjoyment
+p5 <- ggplot(condiments, aes(x = temperature, y = enjoyment)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(title = "Enjoyment vs Temperature", 
+       x = "Temperature (°C)", y = "Enjoyment") +
+  theme_minimal()
+
+grid.arrange(p3, p4, p5, ncol = 2)
+```
+
+### 2.3 Exploring Potential Interactions
+
+```{r interactions, fig.height=10}
+# Food × Sauce interaction visualization
+p6 <- ggplot(condiments, aes(x = food, y = enjoyment, fill = sauce)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Food × Sauce Interaction", 
+       x = "Food Type", y = "Enjoyment", fill = "Sauce Type") +
+  theme_minimal()
+
+# Temperature × Food interaction
+p7 <- ggplot(condiments, aes(x = temperature, y = enjoyment, color = food)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(title = "Temperature × Food Interaction", 
+       x = "Temperature (°C)", y = "Enjoyment", color = "Food Type") +
+  theme_minimal()
+
+# Food × Sauce with means
+p8 <- condiments %>%
+  group_by(food, sauce) %>%
+  summarise(mean_enjoyment = mean(enjoyment), .groups = 'drop') %>%
+  ggplot(aes(x = food, y = mean_enjoyment, group = sauce, color = sauce)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(title = "Mean Enjoyment: Food × Sauce Interaction", 
+       x = "Food Type", y = "Mean Enjoyment", color = "Sauce Type") +
+  theme_minimal()
+
+grid.arrange(p6, p7, p8, ncol = 2)
+```
+
+**🎯 Key Observation**: Notice the crossing lines in the Food × Sauce plot - this suggests a strong interaction!
+
+------------------------------------------------------------------------
+
+## Part 3: Building Linear Models Progressively
+
+### 3.1 Simple Models (Main Effects Only)
+
+```{r simple-models}
+# Model 1: Enjoyment ~ Food only
+model1 <- lm(enjoyment ~ food, data = condiments)
+get_regression_table(model1)
+
+# Model 2: Enjoyment ~ Sauce only  
+model2 <- lm(enjoyment ~ sauce, data = condiments)
+get_regression_table(model2)
+
+# Model 3: Enjoyment ~ Temperature only
+model3 <- lm(enjoyment ~ temperature, data = condiments)
+get_regression_table(model3)
+
+# Model 4: All main effects
+model4 <- lm(enjoyment ~ food + sauce + temperature, data = condiments)
+get_regression_table(model4)
+
+# Look at model fit
+get_regression_summaries(model4)
+```
+
+### 3.2 Two-Way Interaction Models
+
+```{r two-way-interactions}
+# Model 5: Food × Sauce interaction
+model5 <- lm(enjoyment ~ food * sauce, data = condiments)
+get_regression_table(model5)
+get_regression_summaries(model5)
+
+# Model 6: Food × Temperature interaction
+model6 <- lm(enjoyment ~ food * temperature, data = condiments)
+get_regression_table(model6)
+get_regression_summaries(model6)
+
+# Model 7: Sauce × Temperature interaction
+model7 <- lm(enjoyment ~ sauce * temperature, data = condiments)
+get_regression_table(model7)
+
+# Model 8: Two interactions (no three-way)
+model8 <- lm(enjoyment ~ food * sauce + food * temperature, data = condiments)
+get_regression_table(model8)
+get_regression_summaries(model8)
+```
+
+### 3.3 Full Model with Three-Way Interaction
+
+```{r three-way-interaction}
+# Model 9: Full three-way interaction
+model9 <- lm(enjoyment ~ food * sauce * temperature, data = condiments)
+get_regression_table(model9)
+get_regression_summaries(model9)
+```
+
+------------------------------------------------------------------------
+
+## Part 4: Model Comparison and Selection
+
+### 4.1 Compare Model Fit Statistics
+
+```{r model-comparison}
+# Use moderndive to get clean summaries for all models
+models <- list(
+  "Food only" = model1,
+  "Sauce only" = model2, 
+  "Temperature only" = model3,
+  "Main effects" = model4,
+  "Food × Sauce" = model5,
+  "Food × Temperature" = model6,
+  "Sauce × Temperature" = model7,
+  "Two interactions" = model8,
+  "Three-way interaction" = model9
+)
+
+# Get regression summaries for each model
+model_summaries <- map_dfr(models, get_regression_summaries, .id = "model")
+
+# View the comparison table
+model_summaries %>% 
+  select(model, r_squared, adj_r_squared, mse, rmse) %>%
+  arrange(desc(adj_r_squared))
+
+# Find best models
+cat("Best R²:", model_summaries$model[which.max(model_summaries$r_squared)], "\n")
+cat("Best Adjusted R²:", model_summaries$model[which.max(model_summaries$adj_r_squared)], "\n")
+cat("Lowest RMSE:", model_summaries$model[which.min(model_summaries$rmse)], "\n")
+```
+
+**🎯 Understanding the metrics:**
+
+-   **R²**: Proportion of variance explained (higher = better)
+-   **Adjusted R²**: R² penalized for number of predictors (better for model comparison)
+-   **RMSE**: Root Mean Square Error in original units (lower = better)
+-   **MSE**: Mean Square Error (lower = better)
+
+### 4.2 ANOVA Comparisons
+
+```{r anova-comparisons}
+# Compare nested models with ANOVA
+# First, let's test interactions properly by comparing to appropriate base models
+
+# Test Food × Sauce interaction
+model_fs_main <- lm(enjoyment ~ food + sauce, data = condiments)
+cat("=== Testing Food × Sauce Interaction ===\n")
+anova(model_fs_main, model5)
+
+# Test Food × Temperature interaction  
+model_ft_main <- lm(enjoyment ~ food + temperature, data = condiments)
+cat("\n=== Testing Food × Temperature Interaction ===\n")
+anova(model_ft_main, model6)
+
+# Test adding Food × Temperature to Food × Sauce
+cat("\n=== Adding Food × Temperature to Food × Sauce ===\n")
+anova(model5, model8)
+
+# Test three-way interaction
+cat("\n=== Testing Three-Way Interaction ===\n")
+anova(model8, model9)
+```
+
+#### How to Interpret These ANOVA Results
+
+**What the ANOVA table tells us:**
+
+-   **Model 1**: The simpler model (baseline)
+-   **Model 2**: The more complex model (with additional terms)
+-   **RSS**: Residual Sum of Squares - unexplained variation (lower = better fit)
+-   **Df**: Degrees of freedom - number of additional parameters
+-   **Sum of Sq**: Reduction in RSS when adding the interaction
+-   **F**: F-statistic testing if the improvement is significant
+-   **Pr(\>F)**: P-value - if \< 0.05, the interaction significantly improves the model
+
+**Key findings from our results:**
+
+1.  **Food × Sauce interaction**:
+    -   **F = 339.64, p \< 2.2e-16**\* - HIGHLY SIGNIFICANT
+    -   RSS drops from 34,444 to 11,308 (huge improvement!)
+    -   The effect of sauce definitely depends on food type
+2.  **Food × Temperature interaction**:
+    -   **F = 106.22, p \< 2.2e-16**\* - HIGHLY SIGNIFICANT
+    -   RSS drops from 33,675 to 20,535 (substantial improvement)
+    -   The effect of temperature definitely depends on food type
+3.  **Adding Food × Temperature to Food × Sauce**:
+    -   **F = 8.252, p = 0.0003848**\* - HIGHLY SIGNIFICANT
+    -   Even after including Food × Sauce, adding Food × Temperature still significantly improves the model
+4.  **Three-way interaction**:
+    -   **F = 1.331, p = 0.2671** - NOT SIGNIFICANT
+    -   Adding the three-way interaction doesn't significantly improve the model
+
+**Statistical Strength:** - Both two-way interactions have **extremely small p-values (\< 2.2e-16)**, indicating overwhelming evidence - The F-statistics are very large (339.64 and 106.22), showing strong effects - Even when tested together, both interactions remain significant
+
+**Conclusion**: Include both two-way interactions (Food × Sauce and Food × Temperature) but not the three-way interaction. Use **Model 8**.
+
+### 4.3 Residual Analysis
+
+```{r residual-analysis, fig.height=8}
+# Use moderndive to get regression points (fitted values and residuals)
+model5_points <- get_regression_points(model5)
+model8_points <- get_regression_points(model8)
+
+# Create residual plots
+p_resid1 <- ggplot(model5_points, aes(x = enjoyment_hat, y = residual)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Model 5: Food × Sauce Residuals",
+       x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+p_resid2 <- ggplot(model8_points, aes(x = enjoyment_hat, y = residual)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Model 8: Two Interactions Residuals",
+       x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+grid.arrange(p_resid1, p_resid2, ncol = 2)
+
+# Check for normality of residuals
+p_qq1 <- ggplot(model5_points, aes(sample = residual)) +
+  stat_qq() +
+  stat_qq_line() +
+  labs(title = "Model 5: Q-Q Plot") +
+  theme_minimal()
+
+p_qq2 <- ggplot(model8_points, aes(sample = residual)) +
+  stat_qq() +
+  stat_qq_line() +
+  labs(title = "Model 8: Q-Q Plot") +
+  theme_minimal()
+
+grid.arrange(p_qq1, p_qq2, ncol = 2)
+```
+
+------------------------------------------------------------------------
+
+## Part 5: Visualizing Interactions with sjPlot
+
+### 5.1 Food × Sauce Interaction
+
+```{r food-sauce-plot}
+# Basic interaction plot
+plot_model(model5, type = "int", terms = c("food", "sauce"))
+
+# Customized version
+plot_model(model5, 
+           type = "int",
+           terms = c("food", "sauce"),
+           title = "Food × Sauce Interaction Effect on Enjoyment",
+           axis.title = c("Food Type", "Predicted Enjoyment"),
+           legend.title = "Sauce Type",
+           colors = c("#E69F00", "#56B4E9")) +
+  theme_minimal()
+```
+
+### 5.2 Food × Temperature Interaction
+
+```{r food-temp-plot}
+# Temperature interaction plot
+plot_model(model6, type = "int", terms = c("temperature", "food"))
+
+# With specific temperature range
+plot_model(model6, 
+           type = "int",
+           terms = c("temperature [-30:80]", "food"),
+           title = "Food × Temperature Interaction Effect on Enjoyment",
+           axis.title = c("Temperature (°C)", "Predicted Enjoyment"),
+           legend.title = "Food Type") +
+  theme_minimal()
+```
+
+### 5.3 Three-Way Interaction Visualization
+
+```{r three-way-plot}
+# Three-way interaction (complex!)
+plot_model(model9, 
+           type = "int", 
+           terms = c("temperature [-30:80]", "food", "sauce"),
+           title = "Three-Way Interaction: Food × Sauce × Temperature")
+
+# Alternative: Show interaction at specific temperatures
+plot_model(model9, 
+           type = "int", 
+           terms = c("food", "sauce", "temperature [-10, 20, 60]"),
+           title = "Food × Sauce Interaction at Different Temperatures")
+```
+
+------------------------------------------------------------------------
+
+## Part 6: Interpreting the Results
+
+### 6.1 Understanding the Food × Sauce Interaction
+
+```{r interpret-food-sauce}
+# Use moderndive to get fitted values for each combination
+model5_points <- get_regression_points(model5)
+
+# Calculate means for each food-sauce combination
+interaction_means <- condiments %>%
+  group_by(food, sauce) %>%
+  summarise(
+    observed_mean = mean(enjoyment),
+    n = n(),
+    .groups = 'drop'
+  )
+
+print(interaction_means)
+
+# Get predicted values for all combinations
+new_data_fs <- expand.grid(
+  food = c("Hot Dog", "Ice Cream"),
+  sauce = c("Chocolate Sauce", "Mustard")
+)
+
+# Add predictions
+predictions_fs <- new_data_fs %>%
+  mutate(predicted_enjoyment = predict(model5, new_data_fs))
+
+print(predictions_fs)
+```
+
+**Interpretation:**
+
+-   Hot dogs are enjoyed much more with mustard than chocolate sauce
+-   Ice cream shows the opposite pattern - chocolate sauce is preferred
+-   This is a **disordinal interaction** (lines cross) - the effect of sauce depends completely on the food type
+
+### 6.2 Understanding the Food × Temperature Interaction
+
+```{r interpret-food-temp}
+# Look at the temperature coefficient for each food type
+get_regression_table(model6)
+
+# Create predictions across temperature range
+temp_range <- data.frame(
+  temperature = rep(seq(-20, 80, by = 10), 2),
+  food = rep(c("Hot Dog", "Ice Cream"), each = 11)
+)
+
+temp_predictions <- temp_range %>%
+  mutate(predicted_enjoyment = predict(model6, temp_range))
+
+# Visualize the slopes
+ggplot(temp_predictions, aes(x = temperature, y = predicted_enjoyment, color = food)) +
+  geom_line(size = 1.2) +
+  labs(title = "Temperature Effects by Food Type",
+       x = "Temperature (°C)", 
+       y = "Predicted Enjoyment",
+       color = "Food Type") +
+  theme_minimal()
+```
+
+**Interpretation:**
+
+-   Hot dogs: Enjoyment increases with temperature (positive slope)
+-   Ice cream: Enjoyment decreases with temperature (negative slope)
+-   This makes intuitive sense - hot dogs taste better hot, ice cream tastes better cold!
+
+### 6.3 Model Selection Recommendation
+
+Based on our analysis:
+
+```{r final-model}
+# Final model recommendation
+cat("RECOMMENDED MODEL: Food × Sauce + Food × Temperature\n")
+cat("Reasons:\n")
+cat("1. High adjusted R² (explains most variance)\n")
+cat("2. Good balance of fit vs. complexity\n") 
+cat("3. Both interactions are theoretically meaningful\n")
+cat("4. Three-way interaction not significant\n\n")
+
+# Final model results using moderndive
+cat("FINAL MODEL RESULTS:\n")
+get_regression_table(model8)
+
+cat("\nMODEL FIT STATISTICS:\n")
+get_regression_summaries(model8)
+```
+
+------------------------------------------------------------------------
+
+## Part 7: Practical Applications and Reporting
+
+### 7.1 Creating a Final Visualization
+
+```{r final-viz}
+# Combined plot showing both key interactions
+# Create plots separately to avoid operator conflicts
+p_final1 <- plot_model(model8, 
+                       type = "int", 
+                       terms = c("food", "sauce"),
+                       title = "Food × Sauce Interaction")
+
+p_final2 <- plot_model(model8, 
+                       type = "int", 
+                       terms = c("temperature", "food"),
+                       title = "Food × Temperature Interaction")
+
+# Display plots side by side
+p_final1
+p_final2
+```
+
+### 7.2 Model Equation
+
+The final model can be written as:
+
+**Enjoyment = β₀ + β₁(Food) + β₂(Sauce) + β₃(Temperature) + β₄(Food × Sauce) + β₅(Food × Temperature)**
+
+### 7.3 Key Takeaways
+
+```{r key-findings}
+cat("KEY FINDINGS:\n")
+cat("1. Strong Food × Sauce interaction: Hot dogs prefer mustard, ice cream prefers chocolate\n")
+cat("2. Strong Food × Temperature interaction: Hot dogs better hot, ice cream better cold\n") 
+
+# Get the adjusted R-squared from our final model
+final_summary <- get_regression_summaries(model8)
+cat("3. Model explains", round(final_summary$adj_r_squared * 100, 1), "% of variance\n")
+cat("4. Both interactions are statistically significant and practically meaningful\n")
+```
+
+------------------------------------------------------------------------
+
+## Part 8: Exercise Questions
+
+Try these to test your understanding:
+
+1.  **What would happen if we only used main effects?** Compare `model4` predictions to `model8`.
+
+2.  **Create interaction plots manually using ggplot2** instead of sjPlot.
+
+3.  **What if we had a different dataset?** How would you approach model building?
+
+4.  **Prediction exercise**: Use the final model to predict enjoyment for:
+
+    -   Hot dog with mustard at 65°C
+    -   Ice cream with chocolate sauce at -5°C
+
+```{r predictions}
+# Prediction example using moderndive functions
+new_data <- data.frame(
+  food = c("Hot Dog", "Ice Cream"),
+  sauce = c("Mustard", "Chocolate Sauce"), 
+  temperature = c(65, -5)
+)
+
+# Get predictions
+predictions <- new_data %>%
+  mutate(predicted_enjoyment = predict(model8, new_data))
+
+print(predictions)
+
+# For confidence intervals, we can use broom package
+library(broom)
+predict_with_ci <- augment(model8, newdata = new_data, interval = "prediction")
+print(predict_with_ci)
+```
+
+------------------------------------------------------------------------
+
+## Summary
+
+This lesson demonstrated the complete workflow for interaction modeling:
+
+✅ **Exploratory visualization** revealed potential interactions\
+✅ **Progressive model building** from simple to complex\
+✅ **Model comparison** using multiple criteria\
+✅ **Interaction visualization** with professional plots\
+✅ **Practical interpretation** of results
+
+**The key insight**: Interactions occur when the effect of one variable depends on the level of another variable. Always visualize your data first, build models progressively, and choose the model that balances fit with interpretability!
+
+------------------------------------------------------------------------
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```

@@ -1,4 +1,4 @@
-function(link, encoding = NULL) {
+read_gdoc_csv <- function(link, encoding = NULL) {
   # Validate input
   if (!grepl("^https://docs\\.google\.com/spreadsheets/d/", link)) {
     message("\nERROR: Invalid Google Sheets URL format")

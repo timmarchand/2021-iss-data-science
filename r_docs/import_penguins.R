@@ -2,7 +2,12 @@
 ## Data Wrangling Practice with Palmer Penguins
 ## Based on Chapter 7: Data Wrangling concepts
 ## ============================================================================
+# Check if pacman is installed, install if not
+if (!require("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
 ### Because you need more penguins in your life
+### For details check out: https://tinyurl.com/isspenguins
 pacman::p_load(palmerpenguins)
 
 # Load required packages

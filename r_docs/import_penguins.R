@@ -24,8 +24,8 @@ penguins_raw
 
 # But let's practice writing and reading data
 penguins_raw %>%
-  # Change date variables to character for practice
-  mutate(`Date Egg` = as.character(`Date Egg`)) %>%
+  # Change date variables to character to practice kubridate functions
+  mutate(`Date Egg` = str_replace_all(`Date Egg`, "-", " ")) %>%
   # Write the raw data to CSV
   write_csv("data/penguins_raw.csv")
 

@@ -1,0 +1,15 @@
+1Country: Australia Capital: Canberra Population: 25.7 million GDP per capita: $51,812 Official Language: English Joined OECD: 1971
+2Country: Austria Capital: Vienna Population: 8.9 million GDP per capita: $53,268 Official Language: German Joined OECD: 1961
+3Country: Belgium Capital: Brussels Population: 11.5 million GDP per capita: $49,529 Official Language: Dutch, French, German Joined OECD: 1961
+4Country: Canada Capital: Ottawa Population: 38.0 million GDP per capita: $46,195 Official Language: English, French Joined OECD: 1961
+5Country: Chile Capital: Santiago Population: 19.1 million GDP per capita: $15,355 Official Language: Spanish Joined OECD: 2010
+6Country: Colombia Capital: Bogotá Population: 50.9 million GDP per capita: $6,104 Official Language: Spanish Joined OECD: 2020
+7Country: Costa Rica Capital: San José Population: 5.1 million GDP per capita: $12,509 Official Language: Spanish Joined OECD: 2021
+8Country: Czech Republic Capital: Prague Population: 10.7 million GDP per capita: $26,821 Official Language: Czech Joined OECD: 1995
+9Country: Denmark Capital: Copenhagen Population: 5.8 million GDP per capita: $68,037 Official Language: Danish Joined OECD: 1961
+10Country: Estonia Capital: Tallinn Population: 1.3 million GDP per capita: $27,943 Official Language: Estonian Joined OECD: 2010
+11Country: Finland Capital: Helsinki Population: 5.5 million GDP per capita: $53,654 Official Language: Finnish, Swedish Joined OECD: 1969
+12Country: France Capital: Paris Population: 67.4 million GDP per capita: $44,995 Official Language: French Joined OECD: 1961
+13Country: Germany Capital: Berlin Population: 83.2 million GDP per capita: $50,802 Official Language: German Joined OECD: 1961
+14Country: Greece Capital: Athens Population: 10.7 million GDP per capita: $19,673 Official Language: Greek Joined OECD: 1961
+15Country: Hungary Capital: Budapest Population: 9.8 million GDP per capita: $18,773 Official Language: Hungarian Joined OECD: 1996

@@ -7,12 +7,25 @@ library(htmltools) # to view text in html window
 
 ## Read in the raw data from a messy webscrape from the ISS website
 # Raw text data
-raw_text <- read_lines("data/iss_scrape.txt")
-
+raw_text <- read_file("data/iss_scrape.txt")
+raw_lines <- read_lines("data/iss_scrape.txt")
 ## 1 EXAMINE the raw_text----
 
+# What's the difference?
 print(raw_text)
+print(raw_lines)
+
+# What's the difference?
+length(raw_text)
+length(raw_lines)
+
+# What's the difference?
+str_length(raw_text)
+str_length(raw_lines)
+
+# What's the difference?
 html_print(raw_text)
+html_print(raw_lines)
 
 #' If you get an error you don't understand,
 #' what should you do?
@@ -28,7 +41,9 @@ html_print(raw_text)
 #' Are all the faculty full Professors?
 #' Between which "anchors" are fields of expertise listed?
 
+## Regular expressions (REGEX) ----
 
+## <https://www.ecosia.org/images?q=Some%20people%2C%20when%20confronted%20with%20a%20problem%2C%20think%20%E2%80%9CI%20know%2C%20I%E2%80%99ll%20use%20regular%20expressions.%E2%80%9D%20Now%20they%20have%20two%20problems.&addon=opensearch&addonversion=7.2.0#id=4C1250D1988C835852DCE493C7B817557DCAAC34>
 
 ## Here are some regex you can use in the following code
 
@@ -42,7 +57,8 @@ html_print(raw_text)
 #' "(?<=Professor)" Look ahead anchor for Professor
 #' "(?=\\sFields)" Look behind anchor for Fields
 #' "(?=,)" Look behind anchor for a comma
-#' "[A-Z']"+ any uppercase letter or apostrophe multiple times
+#' "[A-Z]" any uppercase letter
+#' "[A-Z']+" any uppercase letter or apostrophe multiple times
 #' "English|Social Science" match English or Social Science
 #' "Professor|Associate Professor" match Professor or Associate Professor
 #' .+?(?=\\d+|$) A lazy match until either a digit or end of the string
@@ -51,7 +67,7 @@ html_print(raw_text)
 
 str_view_all(raw_text, "\\d+", html = TRUE)
 
-#' Difficult to see because there are no linebreaks
+#' Difficult to see because there are no linebreaks in raw_text
 #' Let's add them by adding a new line before each digit
 
 raw_view <- str_replace_all(raw_text, "(\\d+)", "\n\\1")
@@ -174,7 +190,7 @@ ISS_prof_df <-
          position = str_extract(entries, "Professor|Associate Professor"),
          specialty = str_extract(entries, "Social Science|English"),
          fields = str_extract(entries, "(?<=Specialization).+$")
-)
+  )
 ISS_prof_df
 
 ## make the df "tidy"
@@ -183,4 +199,3 @@ ISS_prof_df
 ISS_prof_df %>% 
   mutate(fields = str_squish(fields)) %>% 
   separate_longer_delim(fields, ",")
-

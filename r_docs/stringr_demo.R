@@ -121,6 +121,22 @@ str_extract_all(raw_text, "[A-Z']{2,}")
 #' hint: try another lazy match between two anchors
 str_extract_all(raw_text, "(?<=Professor).+?(?=\\sFields)")
 #' What happens if you do a greedy match instead?
+str_extract_all(raw_text, "(?<=Professor).+(?=\\sFields)")
+
+#' Let's see the difference more clearly with a simple example:
+test_string <- "ProfessorSmith, John FieldsProfessorJones, Jane FieldsProfessorBrown, Bob Fields"
+
+# Lazy match .+? - stops at the FIRST "Fields"
+str_extract_all(test_string, "Professor.+?Fields")
+#' Returns 3 separate matches - one for each professor
+
+# Greedy match .+ - goes to the LAST "Fields" 
+str_extract_all(test_string, "Professor.+Fields")
+#' Returns 1 match covering everything from first Professor to last Fields!
+
+#' The key difference:
+#' .+?  (lazy) = match as LITTLE as possible
+#' .+   (greedy) = match as MUCH as possible
 
 
 # extract  position of each faculty member ----
@@ -162,6 +178,38 @@ entries <- str_split_1(raw_text, "\\d+")
 entries <- entries[entries != ""]
 length(entries)
 
+## 3.5 FIXING TYPOS with str_replace ----
+
+#' Before we extract more data, we need to fix some typos!
+#' Did you notice the typos in the data?
+#' Row 12 has "Semniar" instead of "Seminar"
+#' Row 12 also has "Specilazation" instead of "Specialization"
+
+#' Let's fix these using str_replace() and str_replace_all()
+
+# Look at entry 12 before fixing
+entries[12]
+
+# Fix "Semniar" -> "Seminar"
+entries <- str_replace(entries, "Semniar", "Seminar")
+
+# Fix "Specilazation" -> "Specialization" 
+entries <- str_replace(entries, "Specilazation", "Specialization")
+
+# Check entry 12 after fixing
+entries[12]
+
+#' What's the difference between str_replace() and str_replace_all()?
+#' Try this example:
+test_string <- "The cat sat on the mat with another cat"
+str_replace(test_string, "cat", "dog")
+str_replace_all(test_string, "cat", "dog")
+
+#' str_replace() only replaces the FIRST match
+#' str_replace_all() replaces ALL matches
+
+#' Why fix typos now? Let's see what happens when we try to extract...
+
 #' Now certain extractions are easier
 
 #' Extract surnames only ----
@@ -190,36 +238,6 @@ str_extract(entries, "^Social Science")
 str_detect(entries, "^Social Science")
 #' What happens if you use str_subset instead?
 str_subset(entries, "^Social Science")
-
-
-## 3.5 FIXING TYPOS with str_replace ----
-
-#' Did you notice the typos in the data?
-#' Row 12 has "Semniar" instead of "Seminar"
-#' Row 12 also has "Specilazation" instead of "Specialization"
-
-#' Let's fix these using str_replace() and str_replace_all()
-
-# Look at entry 12 before fixing
-entries[12]
-
-# Fix "Semniar" -> "Seminar"
-entries <- str_replace(entries, "Semniar", "Seminar")
-
-# Fix "Specilazation" -> "Specialization" 
-entries <- str_replace(entries, "Specilazation", "Specialization")
-
-# Check entry 12 after fixing
-entries[12]
-
-#' What's the difference between str_replace() and str_replace_all()?
-#' Try this example:
-test_string <- "The cat sat on the mat with another cat"
-str_replace(test_string, "cat", "dog")
-str_replace_all(test_string, "cat", "dog")
-
-#' str_replace() only replaces the FIRST match
-#' str_replace_all() replaces ALL matches
 
 #' WORD BOUNDARIES with \\b ----
 #' 
@@ -369,7 +387,6 @@ ISS_prof_df
 ISS_prof_df %>% 
   mutate(fields = str_squish(fields)) %>% 
   separate_longer_delim(fields, ",")
-
 
 
 ## 5 PRACTICE EXERCISES ----

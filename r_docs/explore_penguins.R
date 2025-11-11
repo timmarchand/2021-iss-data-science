@@ -137,8 +137,9 @@ penguins %>%
   scale_color_manual(values = c("darkorange","purple","cyan4")) 
 
 # Here's another relationship with separate regression lines per species:
+# Note: flipper_length (explanatory) on x-axis, body_mass (response) on y-axis
 penguins %>% 
-  ggplot(aes(body_mass_g, flipper_length_mm, color = species, shape = species)) +
+  ggplot(aes(flipper_length_mm, body_mass_g, color = species, shape = species)) +
   geom_point() +
   geom_smooth(method = "lm") +
   scale_color_manual(values = c("darkorange","purple","cyan4"))
@@ -153,20 +154,23 @@ penguins %>%
   scale_fill_manual(values = c("darkorange","purple","cyan4"))
 
 # Boxplots are more compact for comparisons:
+# Categorical variable (species) on x-axis, continuous (body_mass_g) on y-axis
 penguins %>% 
-  ggplot(aes(body_mass_g, fill = species)) +
+  ggplot(aes(species, body_mass_g, fill = species)) +
   geom_boxplot()  +
   scale_fill_manual(values = c("darkorange","purple","cyan4"))
 
 # Jitter plots show individual points:
+# Categorical variable (species) on x-axis, continuous (flipper_length) on y-axis
 penguins %>% 
-  ggplot(aes(flipper_length_mm, species)) +
-  geom_jitter(aes( color = species, shape = species))  +
+  ggplot(aes(species, flipper_length_mm)) +
+  geom_jitter(aes(color = species, shape = species))  +
   scale_color_manual(values = c("darkorange","purple","cyan4"))
 
 # We can combine boxplot and jitter for maximum information:
+# Categorical variable (island) on x-axis, continuous (body_mass_g) on y-axis
 penguins %>% 
-  ggplot(aes(body_mass_g, island)) +
+  ggplot(aes(island, body_mass_g)) +
   geom_boxplot() +
   geom_jitter(aes(color = species, shape = species))  +
   scale_color_manual(values = c("darkorange","purple","cyan4"))
@@ -244,8 +248,10 @@ get_regression_table(num_model)
 get_regression_points(num_model)
 
 # Visualize the relationship:
+# Model: body_mass_g ~ flipper_length_mm
+# So flipper_length (predictor) on x-axis, body_mass (response) on y-axis
 penguins %>% 
-  ggplot(aes(body_mass_g, flipper_length_mm)) +
+  ggplot(aes(flipper_length_mm, body_mass_g)) +
   geom_point() +
   geom_smooth(method = "lm")
 
@@ -256,8 +262,10 @@ get_regression_table(num_model2)
 get_regression_points(num_model2)
 
 # Visualize with separate lines:
+# Model: body_mass_g ~ flipper_length_mm + sex
+# Flipper_length (predictor) on x-axis, body_mass (response) on y-axis
 penguins %>% drop_na() %>% 
-  ggplot(aes(body_mass_g, flipper_length_mm, color = sex)) +
+  ggplot(aes(flipper_length_mm, body_mass_g, color = sex)) +
   geom_point() +
   geom_smooth(method = "lm") +
   scale_color_manual(values = c("darkorange","purple","cyan4")) 
@@ -269,8 +277,10 @@ get_regression_table(num_model3)
 get_regression_points(num_model3)
 
 # Visualize:
+# Model: body_mass_g ~ flipper_length_mm + species
+# Flipper_length (predictor) on x-axis, body_mass (response) on y-axis
 penguins %>% drop_na() %>% 
-  ggplot(aes(body_mass_g, flipper_length_mm, color = species)) +
+  ggplot(aes(flipper_length_mm, body_mass_g, color = species)) +
   geom_point() +
   geom_smooth(method = "lm") +
   scale_color_manual(values = c("darkorange","purple","cyan4")) 
